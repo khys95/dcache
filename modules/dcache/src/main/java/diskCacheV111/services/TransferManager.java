@@ -397,7 +397,8 @@ public abstract class TransferManager extends AbstractCellComponent
     }
 
     @Autowired(required = false)
-    public void setTransferTemplate(KafkaTemplate kafkaTemplate) {
+    @Qualifier("")
+    public void setTransferTemplate( KafkaTemplate kafkaTemplate) {
         _kafkaSender = kafkaTemplate::sendDefault;
     }
 
