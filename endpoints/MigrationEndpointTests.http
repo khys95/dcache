@@ -1,0 +1,903 @@
+# curl -X POST "http://localhost:3880/api/v1/migrations/copy" -H  "accept: application/json" -H  "content-type: application/json" -d "{  \"sourcePool\": \"pool_res2\",  \"targetPools\": [\"pool_res3\"]}"
+
+POST http://localhost:3880/api/v1/migrations/copy
+accept: application/json
+Content-Type: application/json
+#Authorization: Basic admin dickerelch
+Authorization: Basic {{user_name}} {{passwd}}
+
+{
+  "sourcePool": "pool_write",
+  "targetPools": [
+    "pool_res3"
+  ]
+}
+
+> {%
+    client.test("Correct auth credentials are provided for POST", function() {
+        client.assert(response.status === 201, "Response status is not 201");
+    });
+%}
+
+###test if response status is 401 unauthorized with no credentials
+POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+
+
+{
+  "sourcePool": {{sourcePool}},
+  "targetPools": ["pool_res2"]
+}
+
+> {%
+    client.test("Wrong auth credentials are provided", function() {
+        client.assert(response.status === 401, "Response status is not 401");
+    });
+%}
+
+###  test if response status is 201 with correct credentials
+POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+Content-Type: application/json
+Authorization: Basic {{user_name}} {{passwd}}
+
+{
+  "sourcePool": {{sourcePool}},
+  "targetPools": ["pool_res1", "pool_res2"]
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 201, "Response status is not 201");
+    });
+
+%}
+
+#### test if response content-type is json
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}]
+#}
+#> {%
+#    client.test("Response content-type is json", function() {
+#        var type = response.contentType.mimeType;
+#        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+#});
+#%}
+#
+#<> 2023-05-24T142006.500.json
+#
+#
+#### test if response body is empty
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}]
+#}
+#
+#> {%
+#    client.test("Response body is empty(null)", function() {
+#        client.assert(response.body === null, "Response body was not null");
+#    });
+#%}
+#
+#### test if Bad Request is returned if sourcePool is not provided
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "targetPools": [{{targetPools}}]
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 400, "Response status is not 400");
+#    });
+#%}
+#
+#<> 2023-05-24T142102.400.json
+#
+#
+#### test if Bad Request is returned if targetPool is not provided
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}}
+#
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 400, "Response status is not 400");
+#    });
+#%}
+#
+#<> 2023-05-24T142130.400.json
+#
+#### test if Bad Request is returned if sourcePool is not correct
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{wrong_src_pool_name}},
+#  "targetPools": [{{targetPools}}]
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 400, "Response status is not 400");
+#    });
+#%}
+#
+#<> 2023-05-24T143543.400.json
+#
+#
+#### test if Bad Request is returned if targetPool name is not correct
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{wrong_target_pool_name}}]
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 400, "Response status is not 400");
+#    });
+#%}
+#
+#<> 2023-05-24T143744.400.json
+#
+#### test if Bad Request is returned if targetPools array has length==0
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": []
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 400, "Response status is not 400");
+#    });
+#%}
+#
+#### test if Bad Request is returned if one of the spacified targetPools does not exist
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}, {{wrong_target_pool_name}}]
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 400, "Response status is not 400");
+#    });
+#%}
+#
+#<> 2023-05-24T144458.400.json
+#<> 2023-05-24T141201.400.json
+#
+#### test if concurrency cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "concurrency": "3.98"
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#<> 2023-05-24T115139.500.json
+#<> 2023-05-24T115101.500.json
+#
+#### test if pins cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "pins": "keep"
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if pins cmd throws no error2------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "pins": "move"
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if smode cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "smode": "same"
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if smode cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "smode": "cached"
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#### test if smode cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "smode": "precious"
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if smode cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "smode": "removable"
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if smode cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "smode": "delete"
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if smode cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "smode": "delete+u2"
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if tmode cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "tmode": "same"
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if tmode cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "tmode": "cached"
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if tmode cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "tmode": "precious"
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if verify cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "verify": true
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if verify cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "verify": false
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if eager cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "eager": true
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if eager cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "eager": false
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if exclude cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "exclude": [{{excludePools}}]
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if include cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "include" : [{{includePools}}]
+#}
+#
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if refresh cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "refresh" : {{refresh}}
+#}
+#
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if select cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "select" : "proportional"
+#}
+#
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if select cmd throws no error--------------------THIS TEST MUST FAIL, BEST DOES NOT EXIST----------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "select" : "best"
+#}
+#
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if select cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "select" : "random"
+#}
+#
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if target cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "target" : "pool"
+#}
+#
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if target cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "target" : "pgroup"
+#}
+#
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if target cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "target" : "link"
+#}
+#
+#
+#> {%
+#    client.test("Response is Internal Server Error, when more targets are specified", function() {
+#        client.assert(response.status === 500, "Response status is not 500");
+#    });
+#%}
+#
+#### test if target cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "target" : "hsm"
+#}
+#
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if fileAttributes accessed cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "fileAttributes" : {
+#      "accessed" : {{accessed}}
+#  }
+#}
+#
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#### test if response type is json
+#GET {{schema-host-port}}/{{api}}/{{v1}}/migrations/{{pool_name}}/1
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#> {%
+#    client.test("Response content-type is json", function() {
+#        var type = response.contentType.mimeType;
+#        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+#    });
+#%}
+#
+#### test if al cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "fileAttributes" : {
+#      "al" : "online"
+#  }
+#}
+#
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if al cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "fileAttributes" : {
+#      "al" : "nearline"
+#  }
+#}
+#
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if pnfsid cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "fileAttributes" : {
+#      "pnfsid" : [{{pnfsid}}]
+#  }
+#}
+#
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if state cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "fileAttributes" : {
+#      "state" : "cached"
+#  }
+#}
+#
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if state cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "fileAttributes" : {
+#      "state" : "precious"
+#  }
+#}
+#
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if rp cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "fileAttributes" : {
+#      "rp" : "custodial"
+#  }
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#
+#### test if rp cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "fileAttributes" : {
+#      "rp" : "replica"
+#  }
+#}
+#
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if rp cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "fileAttributes" : {
+#  "rp" : "output"
+#  }
+#}
+#
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if size cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "fileAttributes" : {
+#      "size" : {{size}}
+#  }
+#}
+#
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#### test if sticky cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "fileAttributes" : {
+#    "sticky" : [{{owners}}]
+#  }
+#}
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
+#
+#
+#### test if storage cmd throws no error------------------------------------------------
+#POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+#Content-Type: application/json
+#Authorization: Basic {{user_name}} {{passwd}}
+#
+#{
+#  "sourcePool": {{sourcePool}},
+#  "targetPools": [{{targetPools}}],
+#  "fileAttributes" : {
+#    "storage" : {{storage}}
+#  }
+#}
+#
+#
+#> {%
+#    client.test("Response is Bad request", function() {
+#        client.assert(response.status === 201, "Response status is not 201");
+#    });
+#%}
+#
