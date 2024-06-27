@@ -1,0 +1,126 @@
+### NEGATIVE TESTS
+### Incorrect path
+POST {{schema-host-port}}/{{api}}/{{v1}}/migration/copy
+
+> {%
+    client.test("Incorrect path", function() {
+        client.assert(response.status === 404, "Response status is not 4014");
+    });
+%}
+
+### No auth provided
+POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+Content-Type: application/json
+
+{
+  "sourcePool": {{sourcePool}},
+  "targetPools": ["pool_res2"]
+}
+
+> {%
+    client.test("No authentication provided", function() {
+        client.assert(response.status === 401, "Response status is not 401");
+    });
+%}
+
+### Incorrect media type
+POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+accept: application/json
+Content-Type: text/html
+Authorization: Basic {{user_name}} {{passwd}}
+
+{
+  "sourcePool": "pool_write",
+  "targetPools": [
+    "pool_res3"
+  ]
+}
+
+> {%
+    client.test("Incorrect media provided", function() {
+        client.assert(response.status === 415, "Response code not 415");
+        var type = response.contentType.mimeType;
+        client.assert(type != "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+%}
+
+
+
+### Incorrect path
+GET {{schema-host-port}}/{{api}}/{{v1}}/migration/pool_write
+
+> {%
+    client.test("Incorrect path", function() {
+        client.assert(response.status === 404, "Response status is not 404");
+    });
+%}
+
+### No auth provided
+GET {{schema-host-port}}/{{api}}/{{v1}}/migrations/pool_write/1
+
+> {%
+    client.test("Incorrect path", function() {
+        client.assert(response.status === 401, "Response status is not 401");
+    });
+%}
+
+
+### POSITIVE TESTS
+### Auth provided
+GET {{schema-host-port}}/{{api}}/{{v1}}/migrations/pool_write/1
+Authorization: Basic {{user_name}} {{passwd}}
+
+> {%
+    client.test("Successful request with provided authentication", function() {
+        client.assert(response.status === 200, "Response code not 201");
+    });
+%}
+
+### Auth provided
+POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+accept: application/json
+Content-Type: application/json
+Authorization: Basic {{user_name}} {{passwd}}
+
+{
+  "sourcePool": "pool_write",
+  "targetPools": [
+    "pool_res3"
+  ]
+}
+
+> {%
+    client.test("Successful request with provided authentication", function() {
+        client.assert(response.status === 201, "Expected 200 but was: " + response.status);
+    });
+
+    client.test(" responds with json content-type", function() {
+        var type = response.contentType.mimeType;
+        var body = response.body
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+        client.assert(body === null, "Response body was not null");
+    });
+
+%}
+
+
+### Test for additional attributes
+POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+Content-Type: application/json
+Authorization: Basic {{user_name}} {{passwd}}
+
+{
+  "sourcePool": {{sourcePool}},
+  "targetPools": [{{targetPools}}],
+  "target": {{target}},
+  "pins": "move",
+  "smode": "same"
+
+}
+
+> {%
+    client.test("Successfully created request", function() {
+        client.assert(response.status === 201, "Response status is not 201");
+    });
+%}
+
