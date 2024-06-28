@@ -1,5 +1,6 @@
-### NEGATIVE TESTS
-### Incorrect path
+### UNSUCCESSFUL REQUESTS
+
+### Incorrect path for POST
 POST {{schema-host-port}}/{{api}}/{{v1}}/migration/copy
 
 > {%
@@ -8,7 +9,7 @@ POST {{schema-host-port}}/{{api}}/{{v1}}/migration/copy
     });
 %}
 
-### No auth provided
+### No authentication provided for POST
 POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
 Content-Type: application/json
 
@@ -23,7 +24,7 @@ Content-Type: application/json
     });
 %}
 
-### Incorrect media type
+### Incorrect media type for POST
 POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
 accept: application/json
 Content-Type: text/html
@@ -44,9 +45,7 @@ Authorization: Basic {{user_name}} {{passwd}}
     });
 %}
 
-
-
-### Incorrect path
+### Incorrect path for GET
 GET {{schema-host-port}}/{{api}}/{{v1}}/migration/pool_write
 
 > {%
@@ -55,7 +54,7 @@ GET {{schema-host-port}}/{{api}}/{{v1}}/migration/pool_write
     });
 %}
 
-### No auth provided
+### No auth provided for GET
 GET {{schema-host-port}}/{{api}}/{{v1}}/migrations/pool_write/1
 
 > {%
@@ -65,8 +64,9 @@ GET {{schema-host-port}}/{{api}}/{{v1}}/migrations/pool_write/1
 %}
 
 
-### POSITIVE TESTS
-### Auth provided
+### SUCCESSFUL REQUESTS
+
+### Authentication provided for GET
 GET {{schema-host-port}}/{{api}}/{{v1}}/migrations/pool_write/1
 Authorization: Basic {{user_name}} {{passwd}}
 
@@ -76,7 +76,7 @@ Authorization: Basic {{user_name}} {{passwd}}
     });
 %}
 
-### Auth provided
+### Authentication provided  for POST
 POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
 accept: application/json
 Content-Type: application/json
@@ -104,7 +104,7 @@ Authorization: Basic {{user_name}} {{passwd}}
 %}
 
 
-### Test for additional attributes
+### Test for additional attributes for POST
 POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
 Content-Type: application/json
 Authorization: Basic {{user_name}} {{passwd}}
