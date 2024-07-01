@@ -45,6 +45,22 @@ Authorization: Basic {{user_name}} {{passwd}}
     });
 %}
 
+### Source pool not provided
+POST {{schema-host-port}}/{{api}}/{{v1}}/migrations/copy
+Content-Type: application/json
+Authorization: Basic {{user_name}} {{passwd}}
+
+{
+  "targetPools": [{{targetPools}}]
+}
+
+> {%
+    client.test("Response is Bad request", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+    });
+%}
+
+
 ### Incorrect path for GET
 GET {{schema-host-port}}/{{api}}/{{v1}}/migration/pool_write
 
