@@ -261,6 +261,7 @@ public final class BulkResources {
      * @return Object which describes the status of the request. See {@link BulkRequestInfo} for the
      * data fields.
      */
+    //TODO: start here 25.07.24
     @GET
     @ApiOperation("Get the status information for an individual bulk request.")
     @ApiResponses({
