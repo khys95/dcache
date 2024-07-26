@@ -1,9 +1,9 @@
 ### Upload frontend file
-PUT {{webdav-door}}/{{frontend}}
+PUT https://localhost:2881/{{frontend}}
 Authorization: Basic admin dickerelch
 Content-Type: application/octet-stream
 
-< README.md
+< /home/karen/Desktop/frontend.txt
 
 
 ### Migrate frontend file from pool_write to pool_res1
@@ -795,7 +795,7 @@ GET {{frontend-door}}/{{api}}/{{v1}}/{{migrations}}/pool_write/1
 
 
 ### GET request to test if response type is json
-GET {{frontend-door}}/{{api}}/{{v1}}/{{migrations}}/{{pool_name}}/1
+GET http://localhost:3880/{{api}}/{{v1}}/{{migrations}}/{{pool_name}}/2
 Content-Type: application/json
 Authorization: Basic {{user_name}} {{passwd}}
 

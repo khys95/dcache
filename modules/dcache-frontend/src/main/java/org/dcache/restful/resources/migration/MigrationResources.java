@@ -77,32 +77,7 @@ public final class MigrationResources {
     @Path("/copy")
     @Consumes({MediaType.APPLICATION_JSON})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response submitMigrationCopy(@ApiParam(
-          "Description of the request. Which contains the following:\n"
-                + "**sourcePool** - String - Name of the pool to migrate from.\n"
-                + "**targetPools** - Array of Pools (Strings) - Possible target pools.\n"
-                + "**concurrency** - Integer - Amount of Concurrent Transfers to be performed.\n"
-                + "**pins** - String (move | keep) - Controls how sticky flags owned by the PinManager are handled.\n"
-                + "**smode** - String (same | cached | precious | removable | delete)[+<owner>[(<lifetime>)] - "
-                + "Update the local replica to the given mode after transfer. An optional list of sticky flags can be specified.\n"
-                + "**tmode** - String (same | cached | precious )[+<owner>[(<lifetime>)] - "
-                + "Sets the target replica to the given mode after transfer. An optional list of sticky flags can be specified.\n"
-                + "**verify** - Boolean - Force checksum computation when an existing target is updated.\n"
-                + "**eager** - Boolean - Copy replicas rather than retrying when pools with existing replicas fail to respond.\n"
-                + "**exclude** - Array of Pools (Strings) - Exclude Target Pools. Single character (?) and multi character (\\*) wildcards may be used.\n"
-                + "**include** - Array of Pools (Strings) - Only include the specified pools as target pools.\n"
-                + "**refresh** - Integer - Specifies the period in seconds of when target pool information is queried from the pool manager. The default is 300 seconds.\n"
-                + "**select** - String (proportional | random) - Determines how a pool is selected from the set of target pools.\n"
-                + "**target** - String (pool | pgroup | link | hsm) - Determines the interpretation of the target pools.\n"
-                + "**fileAttributes** - Description of the file attributes containing: \n"
-                + "\\- **accessed** - String (<n>|[<n>]..[<m>]) - Only copy replicas within a given time period.\n"
-                + "\\- **al** - String (online | nearline) - Only copy replicas with the given access latency.\n"
-                + "\\- **pnfsid** - Array of String (PNFSIDs) - Only copy replicas with the given PNFSIDs, must contain 1 or more PNFSIDs.\n"
-                + "\\- **state** - String (cached | precious) - Only copy replicas with the given replica state.\n"
-                + "\\- **rp** - String (custodial | replica | output) - Only copy replicas with the given retention policy.\n"
-                + "\\- **size** - String (<n>|[<n>]..[<m>]) - Only copy replicas with size <n>, or a size within the given, possibly open-ended, interval.\n"
-                + "\\- **sticky** - Array of Owners (Strings) - Only copy replicas that are sticky, if the array is not empty, then it will be restricted to the specified owners.\n"
-                + "\\- **storage** - String - Only copy replicas with a certain storage class.") String requestPayload) {
+    public Response submitMigrationCopy( MigrationRequest migrationRequest) {
         // TODO: Add expressions (pause-when, include-when, exclude-when, stop-when) to the request.
         // TODO: Pass the migration request as a message and not via a CLI-Message.
         // This was implemented as a quick and dirty trick to fulfill some other projects' programmatic contracts.
@@ -120,7 +95,7 @@ public final class MigrationResources {
         }
 
         // First convert to JSON.
-        JSONObject jsonPayload = new JSONObject(requestPayload);
+        JSONObject jsonPayload = new JSONObject(migrationRequest);
         LOGGER.info("JSON Request: {}", jsonPayload);
 
         if (!jsonPayload.has("sourcePool")) {
@@ -326,7 +301,8 @@ public final class MigrationResources {
     @Path("/{poolName}/{id}")
     @Consumes({MediaType.APPLICATION_JSON})
     @Produces(MediaType.APPLICATION_JSON)
-    public MigrationInfo getMigrationInformation(@ApiParam("Name of the pool") @PathParam("poolName") String poolName,
+    public MigrationInfo getMigrationInformation(
+            @ApiParam("Name of the pool") @PathParam("poolName") String poolName,
           @ApiParam("Migration Job ID") @PathParam("id") Integer jobId) {
         // If no credentials were passed.
         if (RequestUser.isAnonymous()) {
