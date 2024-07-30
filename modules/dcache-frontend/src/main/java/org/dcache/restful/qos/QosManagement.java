@@ -26,8 +26,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-
-import org.checkerframework.checker.regex.qual.Regex;
 import org.dcache.qos.QoSTransitionEngine.Qos;
 import org.dcache.restful.util.RequestUser;
 import org.json.JSONArray;
@@ -61,7 +59,6 @@ public class QosManagement {
     })
     @Path("{type}")
     @Produces(MediaType.APPLICATION_JSON)
-    //TODO: run this request and make sure we have/display all the possible choices on the following requests
     public String getQosList(@ApiParam(value = "The kind of object to query.",
           allowableValues = "file,directory")
     @PathParam("type") String qosValue) {
@@ -72,23 +69,20 @@ public class QosManagement {
             throw new NotAuthorizedException("Permission denied");
         }
 
-        if (qosValue.equals("file") || qosValue.equals("directory")) {
-            if ("file".equals(qosValue)) {
-                JSONArray list = new JSONArray(Arrays.asList(DISK.displayName(),
-                        TAPE.displayName(),
-                        DISK_TAPE.displayName(),
-                        VOLATILE.displayName()));
-                json.put("name", list);
-            }
-            else if ("directory".equals(qosValue.trim())) {
-                JSONArray list = new JSONArray(Arrays.asList(DISK.displayName(),
-                        TAPE.displayName(),
-                        DISK_TAPE.displayName(),
-                        VOLATILE.displayName()));
-                json.put("name", list);
-            }
+        if ("file".equals(qosValue)) {
+            JSONArray list = new JSONArray(Arrays.asList(DISK.displayName(),
+                  TAPE.displayName(),
+                  DISK_TAPE.displayName(),
+                  VOLATILE.displayName()));
+            json.put("name", list);
+        } else if ("directory".equals(qosValue.trim())) {
+            JSONArray list = new JSONArray(Arrays.asList(DISK.displayName(),
+                  TAPE.displayName(),
+                  DISK_TAPE.displayName(),
+                  VOLATILE.displayName()));
+            json.put("name", list);
         } else {
-            throw new BadRequestException("Unsupported qos value: " + qosValue);
+            throw new NotFoundException();
         }
 
         json.put("status", "200");
@@ -109,9 +103,8 @@ public class QosManagement {
     })
     @Path("/file/{qos}")
     @Produces(MediaType.APPLICATION_JSON)
-    //TODO: add other as a parameter?
     public BackendCapabilityResponse getQueriedQosForFiles(
-          @ApiParam(value = " The file quality of service to query.", allowableValues = "tape, disk, disk+tape, volatile")
+          @ApiParam("The file quality of service to query.")
           @PathParam("qos") String qosValue) {
 
         BackendCapabilityResponse backendCapabilityResponse
@@ -195,9 +188,8 @@ public class QosManagement {
     })
     @Path("/directory/{qos}")
     @Produces(MediaType.APPLICATION_JSON)
-    //TODO: add other as a parameter?
     public BackendCapabilityResponse getQueriedQosForDirectories(
-          @ApiParam(value = "The directory quality of service to query.", allowableValues = "tape, disk, disk+tape, volatile")
+          @ApiParam("The directory quality of service to query.")
           @PathParam("qos") String qosValue) {
 
         BackendCapabilityResponse backendCapabilityResponse

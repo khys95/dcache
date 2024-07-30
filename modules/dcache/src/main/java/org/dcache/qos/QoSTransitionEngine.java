@@ -55,6 +55,7 @@ import org.dcache.poolmanager.PoolMonitor;
 import org.dcache.vehicles.FileAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import javax.ws.rs.BadRequestException;
 
 /**
  * This is a very rudimentary impplementation of support for QoS transitions. The code has been
@@ -152,7 +153,7 @@ public class QoSTransitionEngine {
             } else if (targetString.equalsIgnoreCase("unavailable")) {
                 return UNAVAILABLE;
             } else {
-                throw new IllegalArgumentException("no such qos type: "
+                throw new BadRequestException("no such qos type: "
                       + targetString);
             }
         }
