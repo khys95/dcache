@@ -146,7 +146,7 @@ public class QoSTransitionEngine {
                 return DISK;
             } else if (targetString.equalsIgnoreCase("tape")) {
                 return TAPE;
-            } else if (targetString.equalsIgnoreCase("disk+tape")) {
+            } else if (targetString.equalsIgnoreCase("disk+tape") || targetString.equalsIgnoreCase("tape+disk")) {
                 return DISK_TAPE;
             } else if (targetString.equalsIgnoreCase("volatile")) {
                 return VOLATILE;
