@@ -32,7 +32,7 @@ Authorization: Basic {{user_name}} {{passwd}}
     });
 %}
 
-### successfull qos file:disk
+### successful qos file:disk
 GET {{frontend-door}}/{{api}}/{{v1}}/{{qos-management}}/file/disk
 accept: application/json
 Authorization: Basic {{user_name}} {{passwd}}
@@ -44,7 +44,7 @@ Authorization: Basic {{user_name}} {{passwd}}
 %}
 
 
-### successfull qos file:disk+tape
+### successful qos file:disk+tape
 GET {{frontend-door}}/{{api}}/{{v1}}/{{qos-management}}/file/disk+tape
 accept: application/json
 Authorization: Basic {{user_name}} {{passwd}}
@@ -55,7 +55,7 @@ Authorization: Basic {{user_name}} {{passwd}}
     });
 %}
 
-### successfull qos file:volatile
+### successful qos file:volatile
 GET {{frontend-door}}/{{api}}/{{v1}}/{{qos-management}}/file/volatile
 accept: application/json
 Authorization: Basic {{user_name}} {{passwd}}
@@ -90,7 +90,7 @@ Authorization: Basic {{user_name}} {{incorrect_passwd}}
 %}
 
 
-### successfull qos directoy:tape
+### successful qos directoy:tape
 GET {{frontend-door}}/{{api}}/{{v1}}/{{qos-management}}/directory/tape
 accept: application/json
 Authorization: Basic {{user_name}} {{passwd}}
@@ -101,7 +101,7 @@ Authorization: Basic {{user_name}} {{passwd}}
     });
 %}
 
-### successfull qos directoy:disk
+### successful qos directoy:disk
 GET {{frontend-door}}/{{api}}/{{v1}}/{{qos-management}}/directory/disk
 accept: application/json
 Authorization: Basic {{user_name}} {{passwd}}
@@ -113,7 +113,7 @@ Authorization: Basic {{user_name}} {{passwd}}
 %}
 
 
-### successfull qos directoy:disk+tape
+### successful qos directoy:disk+tape
 GET {{frontend-door}}/{{api}}/{{v1}}/{{qos-management}}/directory/disk+tape
 accept: application/json
 Authorization: Basic {{user_name}} {{passwd}}
@@ -124,7 +124,7 @@ Authorization: Basic {{user_name}} {{passwd}}
     });
 %}
 
-### successfull qos directoy:volatile
+### successful qos directoy:volatile
 GET {{frontend-door}}/{{api}}/{{v1}}/{{qos-management}}/directory/volatile
 accept: application/json
 Authorization: Basic {{user_name}} {{passwd}}
