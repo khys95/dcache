@@ -10,18 +10,15 @@ By doing this step-by-step tutorial, you have the opportunity to learn more
 about how dCache works and explore some of the details of dCache
 configuration and administration without being overwhelmed.  As far as
 possible, you can simply copy the commands and end up with a working
-dCache.  We've included some example commands that perform some basic
-tests, so you can have some confidence that everything is OK so far,
+dCache.  We have included some example commands that perform some basic
+tests, so you can have some confidence that everything is working as it should,
 before moving on to the next step.
 Please note that, although this tutorial will provide you with a
 working dCache instance, your production instance should be more complex.  There are many ways to configure
 dCache.  The optimal choice depends on which hardware you wish to use
-and how dCache's users will interact with the system.  So, there is no a single recipe that will provide the optimal solution in
-all cases.
+and how dCache's users will interact with the system.  There is no one size fits all.
      
 ### Minimum System Requirements
-
-For a minimal test installation:
 
 - Hardware:
   - Contemporary CPU
@@ -31,27 +28,29 @@ For a minimal test installation:
 - Software:
   - OpenJDK 11
   - Postgres SQL Server 9.5 or later
-  - ZooKeeper version 3.5 (in case of a standalone ZooKeeper installation)
+  - ZooKeeper version 3.5 (embedded)
 
+For production installation, you will need standalone ZooKeeper version 3.7.
 For high performance production scenarios, the hardware requirements greatly
 differ, which makes it impossible to provide such parameters here. However, if
 you wish to setup a dCache-based storage system, just let us know and we will
 help you with your system specifications. Just contact us: <support@dcache.org>.
    
-#### Software:
 
-- OpenJDK 11 (java 11 , and java 17 for dCache staring from version 10.1)
-  
- > yum install java-11-openjdk
- > 
- > dnf install java-11-openjdk-devel
+### Software Installation:
+
+- OpenJDK 11 (java 11, and java 17 for dCache staring from version 10.1)
+
+```xml
+sudo -s
+
+yum install java-11-openjdk
+
+dnf install java-11-openjdk-devel
+```
 
 
-- ZooKeeper version 3.7 (in case of a standalone ZooKeeper installation)
-
-### Installing PostgreSQL
-
-
+### PostgreSQL Installation:
 
 Please remember that, wherever you choose to deploy the database, it
 must be tuned for optimal performance for the available hardware.
@@ -60,26 +59,29 @@ typically experiences very poor performance with its default
 configuration.  In general, the database may be deployed on the same node as dCache or
 on some dedicated machine with db-specific hardware.
 
-To keep this simple, we are assuming that the database will run on the same machine as the dCache services that
-use it.
-
-Then, install the server package for PostgreSQL. The minimal supported PostgreSQL version
-is 9.5. In general, we recommend using the latest version and upgrading your PostgreSQL version as
+For this installation, we assume that the database will run on the same machine as the dCache services that
+use it. The minimal supported PostgreSQL version
+is 9.5. In general for production, we recommend using the latest version and upgrading your PostgreSQL version as
 new versions becomes available.
 
 
 First we install PostgreSQL:
 
 - Postgres SQL Server 9.5 or later
-  
- > dnf -y install postgresql-server
 
-With the database packages installed, we can initialise the database
-the service.  Note that we do not start the database at this point,
+```xml
+dnf -y install postgresql-server
+```
+
+
+With the database packages installed, we can initialise the database service. Note that we do not start the database at this point,
 as we will make some tweaks to the configuration.
 
-> postgresql-setup --initdb
+```xml
+postgresql-setup --initdb
+```
 
+You should see the lines below
  ...
 [root@neic-demo-1 centos]#  postgresql-setup --initdb
  * Initializing database in '/var/lib/pgsql/data'
@@ -89,24 +91,11 @@ as we will make some tweaks to the configuration.
 
 The simplest configuration is to allow password-less access to the database. 
 
- The default setting  looks like this **/var/lib/pgsql/data/pg_hba.conf**:
+Go inside **/var/lib/pgsql/data/pg_hba.conf** and comment out all lines except for 
 
-> grep -v -E "^#|^$" /var/lib/pgsql/data/pg_hba.conf
-
- ```ini
-local   all             all                                     peer
-host    all             all             127.0.0.1/32            ident
-host    all             all             ::1/128                 ident
-local   replication     all                                     peer
-host    replication     all             127.0.0.1/32            ident
-host    replication     all             ::1/128                 ident
- ```
-
-To allow local users to access PostgreSQL without requiring a password, make sure the following three lines
-are the only uncommented lines in the file **/var/lib/pgsql/data/pg_hba.conf**
-
->vi /var/lib/pgsql/data/pg_hba.conf
->
+```xml
+vi /var/lib/pgsql/data/pg_hba.conf
+```
 
    ```ini
     # TYPE  DATABASE    USER        IP-ADDRESS        IP-MASK           METHOD
@@ -115,22 +104,18 @@ are the only uncommented lines in the file **/var/lib/pgsql/data/pg_hba.conf**
     host    all         all         ::1/128                             trust    
    ```
 
-
-   > **NOTE**: the path to **/pg_hba.conf** is different for PostgreSQL 13 and higher versions.
-   > It is **/var/lib/pgsql/data/pg_hba.conf**
-
-
-
 Once this is done, we can configure the system to automatically start
 PostgreSQL on startup, and then manually start the database:
 
-> systemctl enable --now postgresql 
+```xml
+systemctl enable --now postgresql 
+```
+    
+### Creating PostgreSQL users and databases 
 
-   
-   
-   ### Creating PostgreSQL users and databases 
-   
-> systemctl reload postgresql
+```xml
+systemctl reload postgresql
+```
 
 dCache will manage the database schema, creating and updating the
 database tables, indexes etc as necessary.  However, dCache does not
@@ -138,80 +123,45 @@ create the databases.  That is a manual process, typically done only
 once.
 
  Let us create a single database user dcache:
+```xml
+ createuser -U postgres --no-superuser --no-createrole --createdb --no-password dcache
+```
 
-> createuser -U postgres --no-superuser --no-createrole --createdb --no-password dcache
->
-> createdb -U dcache chimera
-
-
-The second line creates  the databases, using the correct database user to
+Let us create the database using the dcache user to
 ensure correct database ownership.  At this stage, we need only one
-database: chimera.  This database holds dCache's namespace.
+database: chimera. This database holds dCache's namespace.
 
-
-Later after installing dcache we run the command `dcache database update`.
-
+```xml
+createdb -U dcache chimera
+```
 
 ### Installing dCache
 
 All dCache packages are available directly from our website’s dCache releases page, under the Downloads
 section.
 
->     
->   rpm -ivh https://www.dcache.org/old/downloads/1.9/repo/9.2/dcache-9.2.19-1.noarch.rpm
+//TODO: ask about this link and newer verison and benefits of downloading? and click installation
 
- ```ini
+```xml
+rpm -ivh https://www.dcache.org/old/downloads/1.9/repo/9.2/dcache-9.2.19-1.noarch.rpm
+```    
+You should see the lines below
+
+```angular17html
 Retrieving https://www.dcache.org/old/downloads/1.9/repo/9.2/dcache-9.2.19-1.noarch.rpm
 warning: /var/tmp/rpm-tmp.gzWZPS: Header V4 RSA/SHA256 Signature, key ID 3321de4c: NOKEY
 Verifying...                          ################################# [100%]
 Preparing...                          ################################# [100%]
 Updating / installing...
    1:dcache-9.2.19-1                  ################################# [100%]
- ```
+```
 
 ### Configuring dCache users
 
-In this tutorial, we will used gPlazma (Grid-Aware Pluggable Authorization Management) service which is a part of dCache,
-providing services for access control, which are used by door-cells in order to
-implement their access control system.
+In this tutorial, we will use gPlazma (Grid-Aware Pluggable Authorization Management) service which is a part of dCache,
+to provide an access control system.
+The dCache RPM comes with a default gPlazma configuration file found inside **/etc/dcache/gplazma.conf**. See below.
 
-The dCache RPM comes with a default gPlazma configuration file **/etc/dcache/gplazma.conf**.
-
- gPlazma requires the CA- and VOMS-root-certificates, that it should use, to be
-present in **/etc/grid-security/certificates/** and **/etc/grid-security/**
-vomsdir respectively.
-
->
-> mkdir -p /etc/grid-security/
->
-> mkdir -p /etc/grid-security/certificates/
->
-
- X.509 credentials require a certificate authority, 
-which require considerable effort to set up. For this tutorial the certificates have been installed on our VMs.
-
-
-Gplazma is configured by the PAM (Privileged Access Management)-style: the first column is the phases of the authentication process. Each login attempt follows four phases: **auth**, **map**, **account** and **session**. Each phase is comprised of plugins.  Second column describes how to handle errors. Running a plugin is either success or failure, plugins that fail sometimes is expected. There are four different options: **optional** ,  **sufficient**, **required** and **requisite**. 
-
-**optional** label means, the success or failure of this plug-in doesn't matter; always move onto next one in the phase.
-
-**suﬀicient** Success of such a plug-in is enough to satisfy the authentication requirements of the stack of
-plug-ins (if a prior required plug-in has failed the success of this one is ignored). A failure of this plug-in is
-not deemed as fatal for the login attempt. If the plug-in succeeds gPlazma immediately proceeds with the
-next plug-in type or returns control to the door if this was the last stack.
-
- **requisite**  means failing plugin finishes the phase with failure. 
- **required** failing plugin fails the phase but remaining plugins are still running.
-
-
-The third column defines plugins that should be used as back-end for its tasks
-and services. 
-
-Lets have a look on a complete configuration example and go through the each phase.
-
-
->vi etc/dcache/gplazma.conf
-                              
  ```ini
 
 cat >/etc/dcache/gplazma.conf <<EOF
@@ -223,29 +173,65 @@ map    optional    vorolemap #2.1
 map     optional    gridmap #2.2
 map     optional    authzdb #2.3
 
+session requisite   roles #3.2
+session requisite   authzdb #3.2
+EOF                            
+```
+
+Gplazma is configured by the PAM (Privileged Access Management)-style, each login attempt follows four phases: **auth**, **map**, **account** and **session** and each phase is comprised of plugins. 
+There are four different options for plugins: **optional**,  **sufficient**, **required**, and **requisite**. 
+
+**optional** means the success or failure of this plugin doesn't matter; always move onto next one in the phase.
+
+**suﬀicient** Success of such plugin is enough to satisfy the authentication requirements of the stack of
+plugins (if a prior required plugin has failed the success of this one is ignored). A failure of this plugin is
+not deemed as fatal for the login attempt. If the plugin succeeds gPlazma immediately proceeds with the
+next plugin type or returns control to the door if this was the last stack.
+
+ **requisite**  means failing plugin finishes the phase with failure. 
+
+ **required** means failing plugin fails the phase but remaining plugins are still running.
+
+
+The third phase defines plugins that should be used as back-end for its tasks
+and services. 
+
+Let's have a look at a complete configuration example and go through each phase.
+
+```xml
+vi etc/dcache/gplazma.conf
+```
+
+ ```ini
+
+cat >/etc/dcache/gplazma.conf <<EOF
+auth    optional    x509 #1.1
+auth    optional    voms #1.2
+auth    sufficient  htpasswd #1.3
+
+map    optional    vorolemap #2.1
+map     optional    gridmap #2.2
+map     optional    authzdb #2.3
 
 session requisite   roles #3.2
 session requisite   authzdb #3.2
 EOF                            
 ```
 
-
-
-
-
  During the login process they will be executed in the order **auth**, **map**, **account** and
 **session**. The identity plugins are not used during login, but later on to map from UID+GID back to user. Within these groups they are used in the order they are specified.
 
-
-
-  **auth**  phase - verifies user’s identity ( Has the user proved who they are?).  Auth-plug-ins are used to read the users public and private credentials and ask some authority, if those are valid for accessing the system.
+**auth**  phase - verifies user’s identity ( Has the user proved who they are?).  Auth-plug-ins are used to read the users public and private credentials and ask some authority, if those are valid for accessing the system.
 
 **#1.1** This configuration tells gPlazma to use the **x.509** plugin used to extracts X.509 certificate chains from the credentials of a user to be used by other plug-ins.
 
-In this tutorial we use  **x.509**  we  need to create the directory **/etc/grid-security/** and **/etc/grid-security/certificates/**
+In this tutorial we use **x.509** we need to create the directory **/etc/grid-security/** and **/etc/grid-security/certificates/**
 
+```xml
+mkdir -p /etc/grid-security/
 
-
+mkdir -p /etc/grid-security/certificates/
+```
 
 If user comes with grid
 certificate and VOMS role: **voms** plugin extracts user’s DN (**#1.2**).
@@ -255,17 +241,14 @@ file may be maintained by the htpasswd command.
 Let us create a new password file (/etc/dcache/htpasswd) and add the user admin
 with passwords admin:
 
-> touch /etc/dcache/htpasswd
-> 
-> yum install httpd-tools
-> 
-> htpasswd -bm /etc/dcache/htpasswd admin admin
->
+```xml
 
-
-
-
-
+touch /etc/dcache/htpasswd
+        
+yum install httpd-tools
+        
+htpasswd -bm /etc/dcache/htpasswd admin admin
+```
 
  **#2** **map** - converts this identity to some dCache user (Who is this user in dCache terms: uid, gids).
 
