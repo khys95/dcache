@@ -1,21 +1,18 @@
-
-
-
 The dCache mission is to provide a system for storing and retrieving huge amounts of data, distributed among a large number of heterogeneous
 server nodes, under a single virtual filesystem tree with a variety of standard access methods.
 
 # Minimal dCache Installation Guide
 
 By doing this step-by-step tutorial, you have the opportunity to learn more
-about how dCache works and explore some of the details of dCache
+about how dCache works and explore some of the details of dCache's
 configuration and administration without being overwhelmed.  As far as
 possible, you can simply copy the commands and end up with a working
 dCache.  We have included some example commands that perform some basic
-tests, so you can have some confidence that everything is working as it should,
+tests, so you are confident that everything is working as it should,
 before moving on to the next step.
 Please note that, although this tutorial will provide you with a
-working dCache instance, your production instance should be more complex.  There are many ways to configure
-dCache.  The optimal choice depends on which hardware you wish to use
+working dCache instance, there are many ways to configure
+dCache and your production instance should be more complex.  The optimal choice depends on which hardware you wish to use
 and how dCache's users will interact with the system.  There is no one size fits all.
      
 ### Minimum System Requirements
@@ -30,16 +27,16 @@ and how dCache's users will interact with the system.  There is no one size fits
   - Postgres SQL Server 9.5 or later
   - ZooKeeper version 3.5 (embedded)
 
-For production installation, you will need standalone ZooKeeper version 3.7.
+For a production installation, you will need standalone ZooKeeper version 3.7.  
 For high performance production scenarios, the hardware requirements greatly
 differ, which makes it impossible to provide such parameters here. However, if
 you wish to setup a dCache-based storage system, just let us know and we will
 help you with your system specifications. Just contact us: <support@dcache.org>.
    
 
-### Software Installation:
+### Software Installation
 
-- OpenJDK 11 (java 11, and java 17 for dCache staring from version 10.1)
+For this installation, we use OpenJDK 11 (java 11, and java 17 for dCache version 10.1 and up)
 
 ```xml
 sudo -s
@@ -49,98 +46,82 @@ yum install java-11-openjdk
 dnf install java-11-openjdk-devel
 ```
 
-
-### PostgreSQL Installation:
-
-Please remember that, wherever you choose to deploy the database, it
+### PostgreSQL Installation
+Remember that wherever you choose to deploy the PostgreSQL database, it
 must be tuned for optimal performance for the available hardware.
 Without doing this, you will see poor performance as PostgreSQL
-typically experiences very poor performance with its default
+typically experiences low performance with its default
 configuration.  In general, the database may be deployed on the same node as dCache or
-on some dedicated machine with db-specific hardware.
+on some dedicated machine with db-specific hardware. 
+    
+For this installation, we assume the database will run on the same machine as the dCache services that
+use it. The minimal supported PostgreSQL version is 9.5. In general for production, we recommend using the latest version and upgrading your PostgreSQL version as new versions become available.
 
-For this installation, we assume that the database will run on the same machine as the dCache services that
-use it. The minimal supported PostgreSQL version
-is 9.5. In general for production, we recommend using the latest version and upgrading your PostgreSQL version as
-new versions becomes available.
-
-
-First we install PostgreSQL:
-
-- Postgres SQL Server 9.5 or later
+Start by installing PostgreSQL version 9.5 or later
 
 ```xml
 dnf -y install postgresql-server
 ```
 
-
-With the database packages installed, we can initialise the database service. Note that we do not start the database at this point,
-as we will make some tweaks to the configuration.
+With the database packages installed, initialise the database service. Note that we **do not start** the database at this point, as we will make some tweaks to the configuration.
 
 ```xml
 postgresql-setup --initdb
 ```
 
-You should see the lines below
  ...
+
 [root@neic-demo-1 centos]#  postgresql-setup --initdb
  * Initializing database in '/var/lib/pgsql/data'
  * Initialized, logs are in /var/lib/pgsql/initdb_postgresql.log
 
 ...
 
-The simplest configuration is to allow password-less access to the database. 
-
-Go inside **/var/lib/pgsql/data/pg_hba.conf** and comment out all lines except for 
+For this tutorial we make the database passwordless so go inside **/var/lib/pgsql/data/pg_hba.conf** and comment out all lines except for 
 
 ```xml
 vi /var/lib/pgsql/data/pg_hba.conf
 ```
 
-   ```ini
     # TYPE  DATABASE    USER        IP-ADDRESS        IP-MASK           METHOD
     local   all         all                                             trust
     host    all         all         127.0.0.1/32                        trust
     host    all         all         ::1/128                             trust    
-   ```
 
-Once this is done, we can configure the system to automatically start
-PostgreSQL on startup, and then manually start the database:
+Then, start the database
 
 ```xml
 systemctl enable --now postgresql 
 ```
     
-### Creating PostgreSQL users and databases 
-
+#### Creating PostgreSQL users and databases 
+//TODO: is this step necessary?
 ```xml
 systemctl reload postgresql
 ```
 
 dCache will manage the database schema, creating and updating the
-database tables, indexes etc as necessary.  However, dCache does not
-create the databases.  That is a manual process, typically done only
+database tables, indexes etc as necessary. However, dCache does not
+create the database. That is a manual process, typically done only
 once.
 
- Let us create a single database user dcache:
+Create a user, we will call it `dcache`
 ```xml
  createuser -U postgres --no-superuser --no-createrole --createdb --no-password dcache
 ```
 
-Let us create the database using the dcache user to
-ensure correct database ownership.  At this stage, we need only one
-database: chimera. This database holds dCache's namespace.
+Create the database using `dcache` to ensure correct database ownership.  At this stage, we need only one database: chimera. This database holds dCache's namespace.
 
 ```xml
 createdb -U dcache chimera
 ```
 
-### Installing dCache
-
+### dCache Installation
+///TODO: DISCUSS THIS? 
 All dCache packages are available directly from our website’s dCache releases page, under the Downloads
 section.
 
-//TODO: ask about this link and newer verison and benefits of downloading? and click installation
+//TODO: ask about this link and newer version and benefits of downloading? and click installation
 
 ```xml
 rpm -ivh https://www.dcache.org/old/downloads/1.9/repo/9.2/dcache-9.2.19-1.noarch.rpm
@@ -156,47 +137,11 @@ Updating / installing...
    1:dcache-9.2.19-1                  ################################# [100%]
 ```
 
-### Configuring dCache users
+#### dCache users configuration
 
-In this tutorial, we will use gPlazma (Grid-Aware Pluggable Authorization Management) service which is a part of dCache,
+We use gPlazma (Grid-Aware Pluggable Authorization Management) service which is a part of dCache,
 to provide an access control system.
-The dCache RPM comes with a default gPlazma configuration file found inside **/etc/dcache/gplazma.conf**. See below.
-
- ```ini
-
-cat >/etc/dcache/gplazma.conf <<EOF
-auth    optional    x509 #1.1
-auth    optional    voms #1.2
-auth    sufficient  htpasswd #1.3
-
-map    optional    vorolemap #2.1
-map     optional    gridmap #2.2
-map     optional    authzdb #2.3
-
-session requisite   roles #3.2
-session requisite   authzdb #3.2
-EOF                            
-```
-
-Gplazma is configured by the PAM (Privileged Access Management)-style, each login attempt follows four phases: **auth**, **map**, **account** and **session** and each phase is comprised of plugins. 
-There are four different options for plugins: **optional**,  **sufficient**, **required**, and **requisite**. 
-
-**optional** means the success or failure of this plugin doesn't matter; always move onto next one in the phase.
-
-**suﬀicient** Success of such plugin is enough to satisfy the authentication requirements of the stack of
-plugins (if a prior required plugin has failed the success of this one is ignored). A failure of this plugin is
-not deemed as fatal for the login attempt. If the plugin succeeds gPlazma immediately proceeds with the
-next plugin type or returns control to the door if this was the last stack.
-
- **requisite**  means failing plugin finishes the phase with failure. 
-
- **required** means failing plugin fails the phase but remaining plugins are still running.
-
-
-The third phase defines plugins that should be used as back-end for its tasks
-and services. 
-
-Let's have a look at a complete configuration example and go through each phase.
+The dCache RPM comes with a default gPlazma configuration file found inside **/etc/dcache/gplazma.conf**. A minimal configuration file will look something like this:
 
 ```xml
 vi etc/dcache/gplazma.conf
@@ -218,14 +163,33 @@ session requisite   authzdb #3.2
 EOF                            
 ```
 
- During the login process they will be executed in the order **auth**, **map**, **account** and
-**session**. The identity plugins are not used during login, but later on to map from UID+GID back to user. Within these groups they are used in the order they are specified.
+Gplazma is configured by the PAM (Privileged Access Management)-style, each login attempt follows four phases: **auth**, **map**, **account** and **session** and each phase is made up of plugins. 
+There are four different plugins: **optional**,  **sufficient**, **required**, and **requisite**. 
 
-**auth**  phase - verifies user’s identity ( Has the user proved who they are?).  Auth-plug-ins are used to read the users public and private credentials and ask some authority, if those are valid for accessing the system.
+**optional:** success or failure of such plugin doesn't matter; always move onto next one in the phase.
 
-**#1.1** This configuration tells gPlazma to use the **x.509** plugin used to extracts X.509 certificate chains from the credentials of a user to be used by other plug-ins.
+**suﬀicient:** success of such plugin is enough to satisfy the authentication requirements of the stack of
+plugins (if a prior required plugin has failed the success of this one is ignored). A failure of this plugin is
+not deemed as fatal for the login attempt. If the plugin succeeds gPlazma immediately proceeds with the
+next plugin type or returns control to the door if this was the last stack.
 
-In this tutorial we use **x.509** we need to create the directory **/etc/grid-security/** and **/etc/grid-security/certificates/**
+ **requisite:** failure of such plugin finishes the phase with failure. 
+
+ **required:** failure of such plugin fails the phase but remaining plugins are still run.
+
+
+
+
+
+**AUTH:** 
+In the auth phase verification of user’s identity takes place. Auth-plugins are used to read the users public and private credentials and ask for authority, if those are valid for accessing the system.
+
+
+//TODO: correct follow thru?
+
+**#1.1** This first line tells gPlazma to use the **x.509** plugin used to extract X.509 certificate chains from the credentials of a user to be used by other plugins.
+
+For **x.509** certificates, create directories grid-security and certificates
 
 ```xml
 mkdir -p /etc/grid-security/
@@ -233,27 +197,27 @@ mkdir -p /etc/grid-security/
 mkdir -p /etc/grid-security/certificates/
 ```
 
-If user comes with grid
-certificate and VOMS role: **voms** plugin extracts user’s DN (**#1.2**).
+**#1.2** This line assumes the user comes with grid certificate and VOMS role and so the **voms** plugin extracts user’s DN.
 
-The **htpasswd** plugin uses the Apache HTTPD server’s file format to record username and passwords. This
+The **htpasswd** plugin uses the Apache HTTPD server’s file format to record username and password. This
 file may be maintained by the htpasswd command.
-Let us create a new password file (/etc/dcache/htpasswd) and add the user admin
-with passwords admin:
+
+//TODO: correct follow thru? --END
+Create a new password file (inside /etc/dcache/htpasswd) and add credentials for admin:
 
 ```xml
-
-touch /etc/dcache/htpasswd
+touch /etc/dcache/htpasswd 
         
 yum install httpd-tools
         
 htpasswd -bm /etc/dcache/htpasswd admin admin
 ```
 
- **#2** **map** - converts this identity to some dCache user (Who is this user in dCache terms: uid, gids).
 
 
- In the next step, any extracted information needs to be mapped to a UID : GID pair to be used inside dCache. Until now, this was typically done with the vorolemap plugin.
+**MAP**
+In the map phase, conversion from identity to dCache user in terms of uid and gids takes place.
+Any extracted information needs to be mapped to a UID : GID pair to be used inside dCache. Until now, this was typically done with the vorolemap plugin.
  
 ```ini
  map    optional    vorolemap
@@ -261,7 +225,7 @@ htpasswd -bm /etc/dcache/htpasswd admin admin
 
 The actual mapping was made inside a dedicated file (by default /etc/grid-security/grid-vorolemap). See step **2.2**.
                                               
- **#2.1** the “grid-mapfile”-file, the client-certificate’s DN is mapped to a
+ **#2.1** inside the “grid-mapfile”, the client-certificate’s DN is mapped to a
 virtual user-name.                      
 
 CA user mapping:
@@ -301,67 +265,79 @@ authorize desyuser           read-write 1000 2000 / / /
 authorize kermit             read-write 1000 1000 / / / 
 EOF
 ```
-
-
-
-
  
- **account** - checks whether the user allowed to use this service.
+ **ACCOUNT**
+
+In the account phase verification of user rights takes place.
 
 
-Finally, **session** adds some additional information, for example the user’s home directory.
+**SESSION** 
+
+In the session phase additional information gets included, for example the user’s home directory.
 
 
-This ability to split login steps between different plugins may make the process seem complicated; however,
-it is also very powerful and allows dCache to work with many different authentication schemes.
+This ability to split login steps between different plugins may make the process seem complicated; however, it is very powerful and allows dCache to work with many different authentication schemes.
 
+For more information on these topics see [Chapter 2. Installing dCache] (https://github.com/khys95/dcache/blob/installation-fixes/docs/TheBook/src/main/markdown/config-gplazma.md) or [Chapter 9. Authorization in dCache.] (https://github.com/khys95/dcache/blob/installation-fixes/docs/TheBook/src/main/markdown/install.md)
 
-
-
-### Another way to authorise (TOKENS WLCG)
+#### Other authorization methods (WLCG TOKENS)
+We will assume that you have a WLCG account, otherwise register [here] (https://wlcg.cloud.cnaf.infn.it/login)
 
 dCache supports OIDC tokens.
 
-You will need to install oid-agent
+You will need to install oidc-agent. 
+
+For this tutorial we install epel to help with the oidc-agent installation
+
+```xml
+dnf config-manager --set-enabled crb
+
+dnf install epel-release epel-next-release
+
+dnf repolist epel
+```
+
+We run the command repolist to make sure epel is enabled.
+
+Expected outcome????
+
+```xml
+[root@kh-dcache-sandbox /]# dnf repolist epel
+        repo id                             repo name                                                                  status
+        epel                                Extra Packages for Enterprise Linux 9 - x86_64                             enabled
 
 
-On the VM for this tutorial it was needed to install epel
+```
 
-> dnf config-manager --set-enabled crb
-> 
-> dnf install epel-release epel-next-release
-> 
-> dnf repolist epel
-> 
+Now we can install oidc-agent and run
 
-Now we can install oid-agent and run:
+```xml
+dnf install oidc-agent
 
->  dnf install oidc-agent
->
-> oidc-agent
+oidc-agent
+```
 
-
-
-```ini
+Expected outcome
 
 [root@neic-demo-1 centos]# OIDC_SOCK=/tmp/oidc-6XTqy6/oidc-agent.3910; export OIDC_SOCK;
 OIDCD_PID=17651; export OIDCD_PID;
 echo Agent pid $OIDCD_PID
 
+Set below variables with respective values as per what was generated. (WILL BE DIFFERENT FOR YOU)
+
+```xml
+export OIDC_SOCK=/tmp/oidc-6XTqy6/oidc-agent.3910
+export OIDCD_PID=17651
+echo $OIDCD_PID
 ```
 
->
-> export OIDC_SOCK=/tmp/oidc-BRujtJ/oidc-agent.4673
->
-> export OIDCD_PID=18499
-> echo $OIDCD_PID
->
->
-And now we can generate token with scope
+Generating WLCG token with scope (COME BACK TO THIS WHEN REGISTRATION TO WLCG GETS ACCEPTED)
 
->
-> oidc-gen wlcg-with-scope
->
+```xml
+ oidc-gen wlcg-with-scope
+```
+
+Expected results:
 
 ```ini
 [1] https://bildungsproxy.aai.dfn.de
@@ -389,12 +365,11 @@ And now we can generate token with scope
 [23] https://lhcb-auth.web.cern.ch/
 Issuer [https://bildungsproxy.aai.dfn.de]:
 
-
 ```
 
-we give the number of the issues in our case it is WLG ([19] https://wlcg.cloud.cnaf.infn.it/
-)
+In our case we want issuer WLG: ([19] https://wlcg.cloud.cnaf.infn.it/)
 
+Expected result
 
 ```ini
 Issuer [https://bildungsproxy.aai.dfn.de]:19
@@ -403,11 +378,7 @@ Issuer [https://bildungsproxy.aai.dfn.de]:19
 The following scopes are supported: openid profile email offline_access wlcg wlcg.groups storage.read:/ storage.create:/ compute.read compute.modify compute.create compute.cancel storage.modify:/ eduperson_scoped_affiliation eduperson_entitlement eduperson_assurance storage.stage:/ entitlements
 
 ```
-in the next step we enter which scopes we want to have: 
-
-> Scopes or 'max' (space separated) [openid profile offline_access]: max
-
-
+Next, enter which scopes we want to have. If you want all scopes enter max like so.
 
 ```ini
 Scopes or 'max' (space separated) [openid profile offline_access]: max
@@ -421,37 +392,41 @@ And enter the code: 9Z4ERM
 Alternatively you can use the following QR code to visit the above listed URL.
 
 ```
-
-After entering the code the device is authorised:
+After you complete the above instructions you should see this message
 
 ```ini
-
 Enter encryption password for account configuration 'wlcg-with-scope': 
 Confirm encryption Password: 
 Everything setup correctly!
 
-
 ```
 
-No we can get the token
+Now we can get the token
 
->  oidc-token wlcg-with-scope
-
+```xml
+oidc-token wlcg-with-scope
+```
+Example of token
 
 ```ini
 
 eyJraWQiOiJyc2ExIiwiYWxnIjoiUlMyNTYifQ.eyJ3bGNnLnZlciI6IjEuMCIsInN1YiI6ImU0ZmYxOTFlLTc4NDUtNDEzYy1iNDM3LTkzNzhmOTIzZmE4ZCIsImF1ZCI6Imh0dHBzOlwvXC93bGNnLmNlcm4uY2hcL2p3dFwvdjFcL2FueSIsIm5iZiI6MTY4OTE0OTI2NSwic2NvcGUiOiJzdG9yYWdlLmNyZWF0ZTpcLyBvcGVuaWQgb2ZmbGluZV9hY2Nlc3MgcHJvZmlsZSBzdG9yYWdlLnJlYWQ6XC8gc3RvcmFnZS5zdGFnZTpcLyBzdG9yYWdlLm1vZGlmeTpcLyB3bGNnIHdsY2cuZ3JvdXBzIiwiaXNzIjoiaHR0cHM6XC9cL3dsY2cuY2xvdWQuY25hZi5pbmZuLml0XC8iLCJleHAiOjE2ODkxNTA0NjQsImlhdCI6MTY4OTE0OTI2NSwianRpIjoiNjRkMWQ0MTktYjkyMi00OTFmLWE5MzctODgyMTEyMDdjMGY3IiwiY2xpZW50X2lkIjoiZTlmOGRiMzktNGZkZS00NjdiLWI1ZjgtYjI1ZDllNDg5ZmZjIiwid2xjZy5ncm91cHMiOlsiXC93bGNnIiwiXC93bGNnXC94ZmVycyJdfQ.K392AfD0kGI72zZHXRYNOK7VEQF1742epUKSQaD14B7wn62fNRNtQekO9hMhpGTQ2nIYnHjeOCYAcg4J9H5Tkk7yUqXc6uya4qMRZ0t2qwfO5Ky_qsoOK0vOZJ9D8ZtDYCowmmdWbHQlqbUCHwi8KNyUk1gJo9RSNah-sL799Fc
 
 ```
+Set another variable
 
->
-> TOKEN=$(oidc-token wlcg-with-scope)
+```xml
+
+TOKEN=$(oidc-token wlcg-with-scope)
+```
 
 
-And here is our token
+Here is our token in JSON format
 
->echo $TOKEN | cut -d "." -f 2 | base64 -d 2>|/dev/null | jq
->
+```xml
+echo $TOKEN | cut -d "." -f 2 | base64 -d 2>|/dev/null | jq
+```
+
 
 ```ini
 
@@ -474,44 +449,22 @@ And here is our token
 ```
 
 Now we need to adapt our gplazma and layout configurations.
-We add to /etc/dcache/gplazma.conf 
+We add oicd plugin to /etc/dcache/gplazma.conf 
 
 ```ini
-auth   optional   x509
-auth   optional   voms
 auth   optional   oidc
 ```
-where the oidc plugin extracts the storage claims, groups and unique identifier from the IAM-token. In the next step, any extracted information needs to be mapped to a UID : GID pair to be used inside dCache. Until now, this was typically done with the vorolemap plugin. This is used during the map step inside the /etc/dcache/gplazma.conf file:
-
-```ini
-map   optional   vorolemap
-
-```
+where the oidc plugin extracts the storage claims, groups and unique identifier from the IAM-token. In the next step, any extracted information needs to be mapped to a UID : GID pair to be used inside dCache. 
 
 The actual mapping was made inside a dedicated file (by default /etc/grid-security/grid-vorolemap). In a similar fashion, the new token based credential have to be mapped as well. 
 
-
 ```ini
 map   sufficient   multimap gplazma.multimap.file=/etc/dcache/multi-mapfile.wlcg_jwt
-# Or after sufficient 
-#map     optional        multimap gplazma.multimap.file=/etc/dcache/multi-mapfile.wlcg_jwt
-
 ```
+
 This configuration works by assigning a token with the correct storage.* claims the UID : GID while the **sufficient** options means, that no further mapping takes place in case the credentials are mapped. For non-authorised token, this map file will fail and the file below will be used to map the token credentials. 
 
-in **mylayout.conf** we add :
-
-
-```ini
-gplazma.oidc.audience-targets=https://wlcg.cern.ch/jwt/v1/any
-gplazma.oidc.provider!wlcg=https://wlcg.cloud.cnaf.infn.it/ -profile=wlcg -prefix=/ -suppress=audience
-
-
-```
-
-
  **gplazma.conf** looks like this now.
-
                               
  ```ini
 
@@ -520,7 +473,7 @@ auth    optional    x509 #1.1
 auth    sufficient  htpasswd #1.3
 auth    optional     oidc
 
-map     optional   multimap gplazma.multimap.file=/etc/dcache/multi-mapfile.wlcg_jwt
+map     sufficient   multimap gplazma.multimap.file=/etc/dcache/multi-mapfile.wlcg_jwt
 
 map     optional    vorolemap #2.1
 map     optional    gridmap #2.2iodc
@@ -532,24 +485,46 @@ session requisite   authzdb #3.2
 EOF                            
 ```
 
+Create multi-mapfile.wlcg_jwt file for mapping 
 > vi **/etc/dcache/multi-mapfile.wlcg_jwt**
 
-                             
+
+//TODO: ASK ABOUT THIS NUMBERS uid:1999 gid:1999? WHERE DO THEY COME FROM?
  ```ini
 
 op:wlcg               uid:1999 gid:1999,true username:wlcg_oidc
 
 ```
 
-We need to change **/etc/grid-security/storage-authzdb**  
+We need to update **/etc/grid-security/storage-authzdb**  
 
  ```ini
 authorize admin         read-write    0    0 / / /
 authorize wlcg_oidc     read-write 1999 1999 / / /
 ```
 
->chown dcache:dcache /etc/grid-security/host*.pem
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------
+//TODO: START HERE
 
 
 ### Four main components in dCache
@@ -600,6 +575,27 @@ The folder **/usr/share/dcache/defaults** contains the default settings of the d
 
 
 For this tutorial we will create a mylayout.conf where the confugurations would be stored.
+
+//todo: add section from above:
+
+
+
+
+In **mylayout.conf** we add :
+
+```ini
+gplazma.oidc.audience-targets=https://wlcg.cern.ch/jwt/v1/any
+gplazma.oidc.provider!wlcg=https://wlcg.cloud.cnaf.infn.it/ -profile=wlcg -prefix=/ -suppress=audience
+
+```
+
+
+```xml
+chown dcache:dcache /etc/grid-security/host*.pem
+```
+
+
+//todo: add section from above:--- end
 
 First we update the file /etc/dcache/dcache.conf, appending the following line:
 
@@ -1161,13 +1157,3 @@ pnfsmanager.db.connections.max=16
 
 
 ```
-
-
-
-
-
-
-
-
-
-    
