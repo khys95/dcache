@@ -1,5 +1,6 @@
 The dCache mission is to provide a system for storing and retrieving huge amounts of data, distributed among a large number of heterogeneous
-server nodes, under a single virtual filesystem tree with a variety of standard access methods.  By doing this step-by-step tutorial, you have the opportunity to learn more
+server nodes, under a single virtual filesystem tree with a variety of standard access methods.  
+By doing this step-by-step tutorial, you have the opportunity to learn more
 about how dCache works and explore some of the details of dCache's configuration and administration without being overwhelmed. The intent of this guide is to provide you with a working
 dCache instance which you can explore and test. However, please note that there are many ways to configure
 dCache and your production instance should be more complex. The optimal choice depends on which hardware you wish to use
@@ -102,11 +103,9 @@ Create the database using `dcache` to ensure correct database ownership.  At thi
 createdb -U dcache chimera
 ```
 
-### dCache Installation
+### dCache
 
----------------------------------------
-### Four main components in dCache
-
+### Four main components
 
 All components in dCache are cells. They are independent and can interact with each other by sending messages just like Microservices with message queues.
 
@@ -128,7 +127,7 @@ In addition to the four main cells you need an access protocol and Zookeper for 
 A distributed directory and coordination service that dCache relies on.
 
 
-#### rmp installation
+### Installation
 
 dCache's current golden release is 10.2
 
