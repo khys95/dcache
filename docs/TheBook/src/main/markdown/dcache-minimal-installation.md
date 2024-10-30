@@ -127,7 +127,6 @@ In addition to the four main cells you need an access protocol and Zookeper for 
 ##### Zookeeper
 A distributed directory and coordination service that dCache relies on.
 
-#### protocol???
 
 #### rmp installation
 
@@ -147,14 +146,6 @@ Updating / installing...
    1:dcache-9.2.19-1                  ################################# [100%]
 ```
 
->Retrieving https://www.dcache.org/old/downloads/1.9/repo/9.2/dcache-9.2.19-1.noarch.rpm
-warning: /var/tmp/rpm-tmp.gzWZPS: Header V4 RSA/SHA256 Signature, key ID 3321de4c: NOKEY
-Verifying...                          ################################# [100%]
-Preparing...                          ################################# [100%]
-Updating / installing...
-   1:dcache-9.2.19-1                  ################################# [100%]
-
-
 ### Configuration files
 
 There are three important configuration files:
@@ -171,13 +162,13 @@ There are three important configuration files:
 - All components run the same dCache version
 - A process called DOMAIN?
  
-Update `dcache.conf` by appending the following line:
+Update `dcache.conf` by appending the following line
 
 ```ini
 dcache.layout = mylayout
 ```
 
-Create the `mylayout.conf` file inside the layouts directory and add the following contents:
+Create the `mylayout.conf` file inside the layouts directory and add the following contents
 
 ```ini
 [dCacheDomain]
@@ -210,7 +201,7 @@ webdav.cell.name=WebDAV-${host.name}
 - Our protocol is webdav will allow share, migration, edit, copy, etc. of files. 
 
 
-We make use of a dCache script to create a pool in `/srv/dcache/pool-1` and dCache will add this pool to the pool service inside the dCache domain automatically.
+We make use of a dCache script to create pool1 in `/srv/dcache/pool-1` and dCache will add this pool to the pool service inside the dCache domain automatically.
 
 ```xml
   dcache pool create /srv/dcache/pool-1 pool1 dCacheDomain
@@ -222,7 +213,7 @@ We make use of a dCache script to create a pool in `/srv/dcache/pool-1` and dCac
 in file:/etc/dcache/layouts/mylayout.conf.
 ```
 
-Open mylayout.conf to check pool1 was added.
+Open mylayout.conf to verify pool1 was added.
 
 ```ini
 ...
@@ -232,7 +223,7 @@ pool.name=pool1
 pool.path=/srv/dcache/pool-1
 pool.wait-for-files=${pool.path}/data
 ```
-### Starting dCache
+### Start dCache
 
 Using systemd service dCache creates a service for each defined domain in the mylayout.conf file. Before starting the service all dynamic systemd units should be generated.
 
@@ -255,7 +246,7 @@ systemctl list-dependencies dcache.target
 
 ```
 
-To check the status, start, stop, and see dcache's logs use the following commands:
+To check the status, start, stop, and see dcache's logs use the following commands
 
 ```xml
 systemctl status dcache@*
@@ -264,7 +255,7 @@ systemctl stop dcache.target
 journalctl -f -u dcache@dCacheDomain
 ```
 
-To upload a file:
+To upload a file
 
 ```xml
  curl -v -k -L -u admin:admin --upload-file /etc/grid-security/hostcert.pem https://neic-demo-2.desy.de:2880/test/file.test.2
@@ -354,4 +345,6 @@ pool.wait-for-files=${pool.path}/data
 - We have two pools.
 
 We reload and restart for dcache to pick up the new configurations.
+
+Happy dCaching!
 
