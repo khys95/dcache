@@ -171,26 +171,31 @@ Create the `mylayout.conf` file inside the layouts directory and add the followi
 ```ini
 [dCacheDomain]
  dcache.broker.scheme = none
- 
+
+[dCacheDomain/admin]
+admin.paths.history=${host.name}/var/admin/history
+
 [dCacheDomain/zookeeper]
 
 [dCacheDomain/pnfsmanager]
  pnfsmanager.default-retention-policy = REPLICA
  pnfsmanager.default-access-latency = ONLINE
 
+[dCacheDomain/poolmanager]
+
 [dCacheDomain/gplazma]
 gplazma.oidc.audience-targets=https://wlcg.cern.ch/jwt/v1/any
 gplazma.oidc.provider!wlcg=https://wlcg.cloud.cnaf.infn.it/ -profile=wlcg -prefix=/ -suppress=audience
 
-[dCacheDomain/poolmanager]
-
 [dCacheDomain/webdav]
-#webdav.authn.basic = true
-webdav.authn.protocol=https
-webdav.authz.readonly=false
 webdav.cell.name=WebDAV-${host.name}
+#webdav.authn.basic = true
+webdav.authn.protocol=http
+webdav.authz.anonymous-operations=READONLY
 
 ```
+
+//TODO: check with system test configs for webdav: https://github.com/dCache/dcache/blob/master/packages/system-test/src/main/skel/etc/layouts/system-test.conf
 
 **Notes**
 
