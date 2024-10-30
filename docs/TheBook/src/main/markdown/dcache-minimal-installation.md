@@ -1,5 +1,5 @@
 The dCache mission is to provide a system for storing and retrieving huge amounts of data, distributed among a large number of heterogeneous
-server nodes, under a single virtual filesystem tree with a variety of standard access methods. By doing this step-by-step tutorial, you have the opportunity to learn more
+server nodes, under a single virtual filesystem tree with a variety of standard access methods.  By doing this step-by-step tutorial, you have the opportunity to learn more
 about how dCache works and explore some of the details of dCache's configuration and administration without being overwhelmed. The intent of this guide is to provide you with a working
 dCache instance which you can explore and test. However, please note that there are many ways to configure
 dCache and your production instance should be more complex. The optimal choice depends on which hardware you wish to use
@@ -56,7 +56,7 @@ postgresql-setup --initdb
 > Initialized, logs are in /var/lib/pgsql/initdb_postgresql.log
 
 
-Make the database passwordless (for minimal installation) by commenting out all lines inside the pg_hba.conf file found in **/var/lib/pgsql/data/pg_hba.conf** except for 
+Make the database passwordless for minimal installation. Inside the pg_hba.conf file in **/var/lib/pgsql/data/pg_hba.conf** comment out all lines except for 
 
 ```xml
 vi /var/lib/pgsql/data/pg_hba.conf
@@ -135,7 +135,6 @@ dCache's current golden release is 10.2
 ```xml
 rpm -ivh https://www.dcache.org/old/downloads/1.9/repo/10.2/dcache-10.2.19-1.noarch.rpm
 ```    
-You should see the lines below
 
 ```angular17html
 Retrieving https://www.dcache.org/old/downloads/1.9/repo/9.2/dcache-9.2.19-1.noarch.rpm
