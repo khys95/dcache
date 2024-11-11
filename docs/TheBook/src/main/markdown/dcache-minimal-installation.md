@@ -1,9 +1,7 @@
-The dCache mission is to provide a system for storing and retrieving huge amounts of data, distributed among a large number of heterogeneous
-server nodes, under a single virtual filesystem tree with a variety of standard access methods.  
 By doing this step-by-step tutorial, you have the opportunity to learn more
-about how dCache works and explore some of the details of dCache's configuration and administration without being overwhelmed. The intent of this guide is to provide you with a working
-dCache instance which you can explore and test. However, please note that there are many ways to configure
-dCache and your production instance should be more complex. The optimal choice depends on which hardware you wish to use
+about how dCache works and explore some of the details of dCache's configuration and administration. The intent of this guide is to provide you with a minimal working
+dCache instance which you can explore. However, please note that there are many ways to configure
+dCache and your production instance will be more complex. The optimal choice depends on which hardware you wish to use
 and how dCache's users will interact with the system. There is no one size fits all.
 
 # Minimal dCache Installation Guide
@@ -57,7 +55,7 @@ postgresql-setup --initdb
 > Initialized, logs are in /var/lib/pgsql/initdb_postgresql.log
 
 
-Make the database passwordless for minimal installation. Inside the pg_hba.conf file in **/var/lib/pgsql/data/pg_hba.conf** comment out all lines except for 
+Make the database passwordless for this minimal installation. Inside the pg_hba.conf file in **/var/lib/pgsql/data/pg_hba.conf** comment out all lines except for 
 
 ```xml
 vi /var/lib/pgsql/data/pg_hba.conf
@@ -107,7 +105,7 @@ createdb -U dcache chimera
 
 ### Four main components
 
-All components in dCache are cells. They are independent and can interact with each other by sending messages just like Microservices with message queues.
+All components in dCache are cells. They are independent and can interact with each other by sending messages just like microservices with message queues.
 
 ##### Door 
 User entry points (WebDav, NFS, FTP, DCAP, XROOT protocols) 
@@ -169,6 +167,8 @@ dcache.layout = mylayout
 Create the `mylayout.conf` file inside the layouts directory and add the following contents
 
 ```ini
+dcache.enable.space-reservation = false
+
 [dCacheDomain]
  dcache.broker.scheme = none
 
@@ -200,8 +200,9 @@ webdav.authz.anonymous-operations=READONLY
 **Notes**
 
 - In this installation, dCache will have only one domain, and it will not be connected to a tape system, hence, the values of retention-policy and access-latency are replica and online respectively. Additionally, `dcache.broker.scheme = none` tells dCache it is running stand-alone instance with no additional domains.
+- SpaceManager uses space reservation which is by default enabled, but for this minimal installation we change it to false. 
 - Authorization is achieved by oidc plugin inside the gplazma component.
-- Our protocol is webdav will allow share, migration, edit, copy, etc. of files. 
+- Our protocol, webdav, will allow share, migration, edit, copy, etc. of files.
 
 
 We make use of a dCache script to create pool1 in `/srv/dcache/pool-1` and dCache will add this pool to the pool service inside the dCache domain automatically.
@@ -231,8 +232,7 @@ pool.wait-for-files=${pool.path}/data
 Using systemd service dCache creates a service for each defined domain in the mylayout.conf file. Before starting the service all dynamic systemd units should be generated.
 
 ```xml
-systemctl daemon-reload
-systemctl start dcache.target
+systemctl restart dcache.target
 ```
 
 To inspect all generated units in dcache.target 
@@ -258,10 +258,11 @@ systemctl stop dcache.target
 journalctl -f -u dcache@dCacheDomain
 ```
 
-To upload a file
+To upload a file  /// has http instead of https, 
 
 ```xml
- curl -v -k -L -u admin:admin --upload-file /etc/grid-security/hostcert.pem https://neic-demo-2.desy.de:2880/test/file.test.2
+curl -v -k -L -X PUT -u admin:admin --upload-file /etc/grid-security/hostcert.pem http://localhost:2880/test/file.test
+
 ```
 
 Verify file is on the pool
