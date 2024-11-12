@@ -2,7 +2,7 @@ By doing this step-by-step tutorial, you have the opportunity to learn more
 about how dCache works and explore some of the details of dCache's configuration and administration. The intent of this guide is to provide you with a minimal working
 dCache instance which you can explore. However, please note that there are many ways to configure
 dCache and your production instance will be more complex. The optimal choice depends on which hardware you wish to use
-and how dCache's users will interact with the system. There is no one size fits all.
+and how dCache's users will interact with the system.  There is no one size fits all.
 
 # Minimal dCache Installation Guide
 
@@ -45,15 +45,11 @@ dnf -y install postgresql-server
 
 Initialise the database service, note that we **do not start** the database at this point, as we will make some tweaks to the configuration.
 
-```xml
-postgresql-setup --initdb
+```angular17html
+[root@neic-demo-1 centos]#  postgresql-setup --initdb
+Initializing database in '/var/lib/pgsql/data'
+Initialized, logs are in /var/lib/pgsql/initdb_postgresql.log
 ```
-
-
-> [root@neic-demo-1 centos]#  postgresql-setup --initdb
-> Initializing database in '/var/lib/pgsql/data'
-> Initialized, logs are in /var/lib/pgsql/initdb_postgresql.log
-
 
 Make the database passwordless for this minimal installation. Inside the pg_hba.conf file in **/var/lib/pgsql/data/pg_hba.conf** comment out all lines except for 
 
@@ -220,8 +216,6 @@ in file:/etc/dcache/layouts/mylayout.conf.
 Open mylayout.conf to verify pool1 was added.
 
 ```ini
-...
-
 [dCacheDomain/pool]
 pool.name=pool1
 pool.path=/srv/dcache/pool-1
@@ -249,6 +243,7 @@ systemctl list-dependencies dcache.target
 
 ```
 
+### Useful commands
 To check the status, start, stop, and see dcache's logs use the following commands
 
 ```xml
@@ -262,7 +257,6 @@ To upload a file  /// has http instead of https,
 
 ```xml
 curl -v -k -L -X PUT -u admin:admin --upload-file /etc/grid-security/hostcert.pem http://localhost:2880/test/file.test
-
 ```
 
 Verify file is on the pool
@@ -278,6 +272,8 @@ To write a file
  ```ini
 
 [root@neic-demo-2 centos]# davix-put -k -H "Authorization: Bearer ${TOKEN}" /etc/grid-security/hostcert.pem https://neic-demo-2.desy.de:2880/test/test.file.1
+davix-put -k -H "Authorization: Bearer ${TOKEN}" /etc/grid-security/hostcert.pem http://localhost:2880/test/test.file
+
 [root@neic-demo-2 centos]# davix-ls -k -H "Authorization: Bearer ${TOKEN}" https://neic-demo-2.desy.de:2880/
 lost%2Bfound
 test
