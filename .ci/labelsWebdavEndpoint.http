@@ -36,7 +36,7 @@ Content-Type: application/json
 
 {"action" : "set-label", "label" : "firststep" }
 
-
+//TODO: IS THIS THE SAME TESTS AS LINE 23
 ### add "firststep" label to readme file
 POST {{frontend-door}}{{endpoint}}{{namespace}}/readme
 Authorization: Basic admin dickerelch
@@ -50,11 +50,9 @@ Content-Type: application/json
 GET {{frontend-door}}{{endpoint}}{{labels}}/firststep
 
 
-### make sure readme file  could be downloaded
+### make sure readme file could be downloaded
 GET {{webdav-door}}/.(collection)(firststep)/readme-0
 Content-Type: application/octet-stream
-
-
 
 > {%
   client.test("Response status is 200 OK", function () {
