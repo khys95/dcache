@@ -1,3 +1,5 @@
+### These tests are to make sure the label functionality works as expected.
+
 ### upload readme file
 PUT {{webdav-door}}/data/pool-a/readme
 Authorization: Basic admin dickerelch
