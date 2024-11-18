@@ -21,14 +21,14 @@ and how dCache's users will interact with the system.  There is no one size fits
 ## Minimal Installation
 
 ### Java 
-For this installation, we use OpenJDK 17 (java 17 for dCache version 10.2 and later)
+For this installation, we use OpenJDK 11 (java 17 for dCache version 10.2 and later)
 
 ```xml
 sudo -s
 
-yum install java-17-openjdk
+yum install java-11-openjdk
 
-dnf install java-17-openjdk-devel
+dnf install java-11-openjdk-devel
 ```
 For a production installation, you will need standalone ZooKeeper version 3.8 or later.  
 
@@ -191,8 +191,6 @@ webdav.authz.anonymous-operations=READONLY
 
 ```
 
-//TODO: check with system test configs for webdav: https://github.com/dCache/dcache/blob/master/packages/system-test/src/main/skel/etc/layouts/system-test.conf
-
 **Notes**
 
 - In this installation, dCache will have only one domain, and it will not be connected to a tape system, hence, the values of retention-policy and access-latency are replica and online respectively. Additionally, `dcache.broker.scheme = none` tells dCache it is running stand-alone instance with no additional domains.
@@ -244,7 +242,7 @@ systemctl list-dependencies dcache.target
 ```
 
 ### Useful commands
-To check the status, start, stop, and see dcache's logs use the following commands
+Finally, here are some useful commands to check dCache's status, start, stop dCache, and see dcache's logs.
 
 ```xml
 systemctl status dcache@*
@@ -253,98 +251,8 @@ systemctl stop dcache.target
 journalctl -f -u dcache@dCacheDomain
 ```
 
-To upload a file  /// has http instead of https, 
-
-```xml
-curl -v -k -L -X PUT -u admin:admin --upload-file /etc/grid-security/hostcert.pem http://localhost:2880/test/file.test
-```
-
-Verify file is on the pool
-
-```console-root
-[centos@os-46-install1 ~]$ ls /srv/dcache/pool-1/data
-0000441B2048C3434F6282C1E1E4EAC9D8CA
-
-```
-
-To write a file
-
- ```ini
-
-[root@neic-demo-2 centos]# davix-put -k -H "Authorization: Bearer ${TOKEN}" /etc/grid-security/hostcert.pem https://neic-demo-2.desy.de:2880/test/test.file.1
-davix-put -k -H "Authorization: Bearer ${TOKEN}" /etc/grid-security/hostcert.pem http://localhost:2880/test/test.file
-
-[root@neic-demo-2 centos]# davix-ls -k -H "Authorization: Bearer ${TOKEN}" https://neic-demo-2.desy.de:2880/
-lost%2Bfound
-test
-[root@neic-demo-2 centos]# davix-ls -k -H "Authorization: Bearer ${TOKEN}" https://neic-demo-2.desy.de:2880/test
-test.file.1
-```
-
-To take a look at the logs 
-
-```xml
-journalctl -f -u dcache@dCacheDomain.service
-```
-
-```console-root
-Jan 05 13:44:15 os-46-install1.novalocal dcache@dCacheDomain[25977]: 05 Jan 2023 13:44:15 (pool1) [] Pool mode changed to enabled
-```
-
-#### Configuration for Separate Domains:
-
-dCache can be configured to run each service in a separate domain. When a dCache instance spans multiple domains, there needs to be some mechanism for sending messages between services located in different domains. The domains communicate with each other via TCP using connections that are established at start-up. The topology is controlled by the location manager service. When configured, all domains connect to a core domain, which routes all messages to the appropriate domains.
-
-In the following example we will add a new pool domain. 
-
-In this case we have:
- - Independent JVMs
- - Shared CPU
- - Per-process log file
- - All components run the same version (different versions can be run)
- 
-
-We will add one new pool domain
-
-```xml
-dcache pool create /srv/dcache/pool-2 pool2 poolsDomain2
-```
-
-Check mylayout.conf file
-
-```ini
-dcache.enable.space-reservation = false
-
-[coreDomain]
-dcache.broker.scheme = core
-[coreDomain/zookeeper]
-[coreDomain/pnfsmanager]
- pnfsmanager.default-retention-policy = REPLICA
- pnfsmanager.default-access-latency = ONLINE
-
-[coreDomain/poolmanager]
-
-[coreDomain/webdav]
- webdav.authn.basic = true
- 
-[poolsDomain1]
-[poolsDomain1/pool1]
-pool.name=pool1
-pool.path=/srv/dcache/pool-1
-pool.wait-for-files=${pool.path}/data
-
-[poolsDomain2]
-[poolsDomain2/pool2]
-pool.name=pool2
-pool.path=/srv/dcache/pool-2
-pool.wait-for-files=${pool.path}/data
-```
-
-**Notes**
-- Now we have a core domain and every cell needs to connect to this core domain.
-- We have two pools.
-
-We reload and restart for dcache to pick up the new configurations.
+We encourage you to play around with the admin interface environment, run commands and add more services as this will help with your understanding. Splitting services into different domains, adding host credentials and working with different protocols are covered in [Chapter 2. Installing dCache] (https://github.com/dCache/dcache/blob/master/docs/TheBook/src/main/markdown/install.md).
+Additionally, chapter 2 does a more in depth dCache installation.
 
 Happy dCaching!
 
