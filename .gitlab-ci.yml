@@ -259,27 +259,27 @@ sign_srm_client_rpm:
   artifacts:
     paths:
     - modules/srm-client/target/rpmbuild/RPMS/noarch/dcache-srmclient*.rpm
-#
-#sign_deb:
-#  stage: sign
-#  image: ubuntu:22.04
-#  needs: ["deb"]
-#  script:
-#    - apt-get -qq update
-#    - apt-get -qq install debsigs gpg
-#    - echo $DCACHE_ORG_PGP_KEY | base64 -d -i > secret.gpg
-#    - gpg --quiet --batch --yes --allow-secret-key-import --passphrase="$DCACHE_ORG_PGP_KEY_PASS" --import secret.gpg
-#    - echo $DCACHE_ORG_PGP_KEY_PASS > $HOME/.gnupg/gpg-passphrase
-#    - echo "passphrase-file $HOME/.gnupg/gpg-passphrase" >> "$HOME/.gnupg/gpg.conf"
-#    - echo 'allow-loopback-pinentry' >> "$HOME/.gnupg/gpg-agent.conf"
-#    - echo 'pinentry-mode loopback' >> "$HOME/.gnupg/gpg.conf"
-#    - echo 'use-agent' >> "$HOME/.gnupg/gpg.conf"
-#    - echo RELOADAGENT | gpg-connect-agent
-#    - debsigs --sign=origin --verify --check -v -k "$DCACHE_ORG_KEY_NAME" packages/fhs/target/dcache_*.deb
-#  artifacts:
-#    paths:
-#    - packages/fhs/target/dcache_*.deb
-#
+
+sign_deb:
+  stage: sign
+  image: ubuntu:22.04
+  needs: ["deb"]
+  script:
+    - apt-get -qq update
+    - apt-get -qq install debsigs gpg
+    - echo $DCACHE_ORG_PGP_KEY | base64 -d -i > secret.gpg
+    - gpg --quiet --batch --yes --allow-secret-key-import --passphrase="$DCACHE_ORG_PGP_KEY_PASS" --import secret.gpg
+    - echo $DCACHE_ORG_PGP_KEY_PASS > $HOME/.gnupg/gpg-passphrase
+    - echo "passphrase-file $HOME/.gnupg/gpg-passphrase" >> "$HOME/.gnupg/gpg.conf"
+    - echo 'allow-loopback-pinentry' >> "$HOME/.gnupg/gpg-agent.conf"
+    - echo 'pinentry-mode loopback' >> "$HOME/.gnupg/gpg.conf"
+    - echo 'use-agent' >> "$HOME/.gnupg/gpg.conf"
+    - echo RELOADAGENT | gpg-connect-agent
+    - debsigs --sign=origin --verify --check -v -k "$DCACHE_ORG_KEY_NAME" packages/fhs/target/dcache_*.deb
+  artifacts:
+    paths:
+    - packages/fhs/target/dcache_*.deb
+
 RPM test install on EL9:
   stage: test_deploy
   image: almalinux:9
