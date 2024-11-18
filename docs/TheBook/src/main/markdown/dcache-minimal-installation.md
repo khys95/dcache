@@ -1,5 +1,4 @@
-By doing this step-by-step tutorial, you have the opportunity to learn more
-about how dCache works and explore some of the details of dCache's configuration and administration. The intent of this guide is to provide you with a minimal working
+The intent of this guide is to provide you with a minimal working
 dCache instance which you can explore. However, please note that there are many ways to configure
 dCache and your production instance will be more complex. The optimal choice depends on which hardware you wish to use
 and how dCache's users will interact with the system.  There is no one size fits all.
@@ -35,7 +34,8 @@ For a production installation, you will need standalone ZooKeeper version 3.8 or
 ### PostgreSQL
     
 For this installation, we assume the database will run on the same machine as the dCache services that
-use it. The minimal supported PostgreSQL version is 9.5. 
+use it.
+The minimal supported PostgreSQL version is 9.5. 
 
 Start by installing PostgreSQL version 13.16 or later
 
@@ -146,7 +146,7 @@ There are three important configuration files:
 **/etc/dcache/dcache.conf**  for main configuration file of dCache  
 **/etc/dcache/layouts** for  properties/configuration updates
 
-#### Configuration single process / one domain:
+#### Configuration single process / one domain (simplest installation):
 
 - Shared JVM
 - Shared CPU
