@@ -166,23 +166,23 @@ tar:
     expire_in: 2 days
 
 
-#spotbugs:
-#  stage: build
-#  image: dcache/maven-java17-tar-build
-#  extends: .build_cache
-#  rules:
-#    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-#  script:
-#    - dnf -y -q install jq
-#    - mvn $MAVEN_CLI_OPTS -DskipTests -am -pl packages/tar -DskipTests package com.github.spotbugs:spotbugs-maven-plugin:4.8.3.0:spotbugs verify
-#    - find . -name gl-code-quality-report.json -print | xargs cat | jq -s "add" > merged-gl-code-quality-report.json
-#  artifacts:
-#    reports:
-#      codequality:
-#        - merged-gl-code-quality-report.json
-#    paths:
-#      - merged-gl-code-quality-report.json
-#    expire_in: 2 days
+spotbugs:
+  stage: build
+  image: dcache/maven-java17-tar-build
+  extends: .build_cache
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - dnf -y -q install jq
+    - mvn $MAVEN_CLI_OPTS -DskipTests -am -pl packages/tar -DskipTests package com.github.spotbugs:spotbugs-maven-plugin:4.8.3.0:spotbugs verify
+    - find . -name gl-code-quality-report.json -print | xargs cat | jq -s "add" > merged-gl-code-quality-report.json
+  artifacts:
+    reports:
+      codequality:
+        - merged-gl-code-quality-report.json
+    paths:
+      - merged-gl-code-quality-report.json
+    expire_in: 2 days
 
 container:
   stage: build
@@ -280,11 +280,11 @@ Check for duplicate dependencies:
 #    paths:
 #    - packages/fhs/target/dcache_*.deb
 #
-#RPM test install on EL9:
-#  stage: test_deploy
-#  image: almalinux:9
-#  script:
-#    - dnf --nogpgcheck install -y packages/fhs/target/rpmbuild/RPMS/noarch/dcache*.rpm
+RPM test install on EL9:
+  stage: test_deploy
+  image: almalinux:9
+  script:
+    - dnf --nogpgcheck install -y packages/fhs/target/rpmbuild/RPMS/noarch/dcache*.rpm
 
 #install_deb:
 #  stage: test_deploy
