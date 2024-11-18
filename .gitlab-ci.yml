@@ -228,21 +228,21 @@ Check for duplicate dependencies:
     - ls -1 /dcache/share/classes/ | sort | sed -e 's/\-[0-9].*$//' | uniq -D > duplicate-dependencies.txt
     - if [ -s duplicate-dependencies.txt ]; then cat duplicate-dependencies.txt; exit 1; fi
 
-#sign_rpm:
-#  stage: sign
-#  image: almalinux:9-minimal
-#  needs: ["rpm"]
-#  script:
-#    - microdnf install -y rpm-sign
-#    - echo $DCACHE_ORG_PGP_KEY | base64 -d -i > secret.gpg
-#    - gpg --quiet --batch --yes --allow-secret-key-import --passphrase="$DCACHE_ORG_PGP_KEY_PASS" --import secret.gpg
-#    - gpg -a --export "$DCACHE_ORG_KEY_NAME" > RPM-GPG-KEY
-#    - rpmsign --addsign --define "_signature gpg" --define "_gpg_name  $DCACHE_ORG_KEY_NAME" --define "_gpg_sign_cmd_extra_args --pinentry-mode loopback --passphrase $DCACHE_ORG_PGP_KEY_PASS" packages/fhs/target/rpmbuild/RPMS/noarch/dcache*.rpm
-#    - rpmkeys --import RPM-GPG-KEY
-#    - rpm --checksig -v packages/fhs/target/rpmbuild/RPMS/noarch/dcache*.rpm
-#  artifacts:
-#    paths:
-#    - packages/fhs/target/rpmbuild/RPMS/noarch/dcache*.rpm
+sign_rpm:
+  stage: sign
+  image: almalinux:9-minimal
+  needs: ["rpm"]
+  script:
+    - microdnf install -y rpm-sign
+    - echo $DCACHE_ORG_PGP_KEY | base64 -d -i > secret.gpg
+    - gpg --quiet --batch --yes --allow-secret-key-import --passphrase="$DCACHE_ORG_PGP_KEY_PASS" --import secret.gpg
+    - gpg -a --export "$DCACHE_ORG_KEY_NAME" > RPM-GPG-KEY
+    - rpmsign --addsign --define "_signature gpg" --define "_gpg_name  $DCACHE_ORG_KEY_NAME" --define "_gpg_sign_cmd_extra_args --pinentry-mode loopback --passphrase $DCACHE_ORG_PGP_KEY_PASS" packages/fhs/target/rpmbuild/RPMS/noarch/dcache*.rpm
+    - rpmkeys --import RPM-GPG-KEY
+    - rpm --checksig -v packages/fhs/target/rpmbuild/RPMS/noarch/dcache*.rpm
+  artifacts:
+    paths:
+    - packages/fhs/target/rpmbuild/RPMS/noarch/dcache*.rpm
 #
 #sign_srm_client_rpm:
 #  stage: sign
