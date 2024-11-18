@@ -242,7 +242,7 @@ systemctl list-dependencies dcache.target
 ```
 
 ### Useful commands
-Finally, here are some useful commands to check dCache's status, start, stop dCache, and see dcache's logs.
+Finally, we will leave you with some important commands to get you going.
 
 ```xml
 systemctl status dcache@*
@@ -251,8 +251,9 @@ systemctl stop dcache.target
 journalctl -f -u dcache@dCacheDomain
 ```
 
-We encourage you to play around with the admin interface environment, run commands and add more services as this will help with your understanding. Splitting services into different domains, adding host credentials and working with different protocols are covered in [Chapter 2. Installing dCache] (https://github.com/dCache/dcache/blob/master/docs/TheBook/src/main/markdown/install.md).
-Additionally, chapter 2 does a more in depth dCache installation.
+## Next steps
+
+Now that you have learned how to install and start dCache, we encourage you to play around with the admin interface and run your own commands, add or split services into different domains, and work with diverse authentication methods and protocols. For a more in depth dCache installation, please refer to [Chapter 2. Installing dCache](install.md).
 
 Happy dCaching!
 
