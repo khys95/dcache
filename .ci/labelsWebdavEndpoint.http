@@ -5,20 +5,21 @@ PUT {{webdav-door}}/data/pool-a/readme
 Authorization: Basic admin dickerelch
 Content-Type: application/octet-stream
 
-< README.md
+< /README.md
 
 ### upload readme1 file
-PUT {{webdav-door}}/data/pool-a/readme1
+PUT {{webdav-door}}/data/pool-a/readmeone
 Authorization: Basic admin dickerelch
 Content-Type: application/octet-stream
 
-< README.md
+< /README.md
 
 
 ### make sure readme file is there
 GET {{frontend-door}}{{endpoint}}{{namespace}}/readme
 
-
+### make sure readme file is there
+GET {{frontend-door}}{{endpoint}}{{namespace}}/readmeone
 
 
 ### add "firststep" label to readme file
@@ -31,16 +32,7 @@ Content-Type: application/json
 
 
 ### add "firststep" label to readme1 file
-POST {{frontend-door}}{{endpoint}}{{namespace}}/readme1
-Authorization: Basic admin dickerelch
-Accept: application/json
-Content-Type: application/json
-
-{"action" : "set-label", "label" : "firststep" }
-
-//TODO: IS THIS THE SAME TESTS AS LINE 23
-### add "firststep" label to readme file
-POST {{frontend-door}}{{endpoint}}{{namespace}}/readme
+POST {{frontend-door}}{{endpoint}}{{namespace}}/readmeone
 Authorization: Basic admin dickerelch
 Accept: application/json
 Content-Type: application/json
@@ -53,7 +45,7 @@ GET {{frontend-door}}{{endpoint}}{{labels}}/firststep
 
 
 ### make sure readme file could be downloaded
-GET {{webdav-door}}/.(collection)(firststep)/readme-0
+GET {{webdav-door}}/.(collection)(firststep)/readmedownloaded
 Content-Type: application/octet-stream
 
 > {%
@@ -65,7 +57,7 @@ Content-Type: application/octet-stream
 %}
 
 ### make sure readme file  could downloaded
-GET {{webdav-door}}/.(collection)(firststep)/readme1-0
+GET {{webdav-door}}/.(collection)(firststep)/readmeONEdownloaded
 Content-Type: application/octet-stream
 
 
