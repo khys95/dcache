@@ -3,14 +3,14 @@ PUT {{webdav-door}}/building
 Authorization: Basic admin dickerelch
 Content-Type: application/octet-stream
 
-< BUILDING.md
+< /BUILDING.md
 
 ### upload readme file
 PUT {{webdav-door}}/readme
 Authorization: Basic admin dickerelch
 Content-Type: application/octet-stream
 
-< README.md
+< /README.md
 
 ### make sure readme file is there
 GET {{frontend-door}}{{endpoint}}{{namespace}}/readme
