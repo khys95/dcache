@@ -286,12 +286,12 @@ RPM test install on EL9:
   script:
     - dnf --nogpgcheck install -y packages/fhs/target/rpmbuild/RPMS/noarch/dcache*.rpm
 
-#install_deb:
-#  stage: test_deploy
-#  image: ubuntu:21.10
-#  script:
-#    - apt-get update
-#    - DEBIAN_FRONTEND=noninteractive apt install -y -f ./packages/fhs/target/dcache_*.deb
+install_deb:
+  stage: test_deploy
+  image: ubuntu:21.10
+  script:
+    - apt-get update
+    - DEBIAN_FRONTEND=noninteractive apt install -y -f ./packages/fhs/target/dcache_*.deb
 
 upload_rpm:
   stage: upload
@@ -440,58 +440,58 @@ Clean k8s environment:
 #
 # infrastructure required to run dCache
 #
-Deploy PostgreSQL:
-  stage: test_infra
-  extends: .helm_image
-  script:
-    - helm repo add bitnami https://charts.bitnami.com/bitnami
-    - helm repo update
-    - helm -n ${K8S_NAMESPACE} install ${HELM_OPTS} --wait --set auth.username=dcache --set auth.password=let-me-in --set auth.database=chimera  chimera bitnami/postgresql
+#Deploy PostgreSQL:
+#  stage: test_infra
+#  extends: .helm_image
+#  script:
+#    - helm repo add bitnami https://charts.bitnami.com/bitnami
+#    - helm repo update
+#    - helm -n ${K8S_NAMESPACE} install ${HELM_OPTS} --wait --set auth.username=dcache --set auth.password=let-me-in --set auth.database=chimera  chimera bitnami/postgresql
 
 #
 # infrastructure required to run dCache
 #
-Deploy Zookeeper:
-  stage: test_infra
-  extends: .helm_image
-  script:
-    - helm repo add bitnami https://charts.bitnami.com/bitnami
-    - helm repo update
-    - helm -n ${K8S_NAMESPACE} install ${HELM_OPTS} --wait cells bitnami/zookeeper
+#Deploy Zookeeper:
+#  stage: test_infra
+#  extends: .helm_image
+#  script:
+#    - helm repo add bitnami https://charts.bitnami.com/bitnami
+#    - helm repo update
+#    - helm -n ${K8S_NAMESPACE} install ${HELM_OPTS} --wait cells bitnami/zookeeper
 
 #
 # infrastructure required to run dCache
 #
-Deploy Kafka:
-  stage: test_infra
-  extends: .helm_image
-  needs:
-    - Deploy Zookeeper
-  script:
-    - helm repo add bitnami https://charts.bitnami.com/bitnami
-    - helm repo update
-    - helm -n ${K8S_NAMESPACE} install ${HELM_OPTS} --wait --set externalZookeeper.servers=cells-zookeeper --set kraft.enabled=false billing bitnami/kafka --version 23.0.7
+#Deploy Kafka:
+#  stage: test_infra
+#  extends: .helm_image
+#  needs:
+#    - Deploy Zookeeper
+#  script:
+#    - helm repo add bitnami https://charts.bitnami.com/bitnami
+#    - helm repo update
+#    - helm -n ${K8S_NAMESPACE} install ${HELM_OPTS} --wait --set externalZookeeper.servers=cells-zookeeper --set kraft.enabled=false billing bitnami/kafka --version 23.0.7
 
 #
 # infrastructure required to run dCache
 #
-Deploy MinIO as Tape:
-  stage: test_infra
-  extends: .helm_image
-  script:
-    - helm repo add bitnami https://charts.bitnami.com/bitnami
-    - helm repo update
-    - helm -n ${K8S_NAMESPACE} install ${HELM_OPTS} --set-string auth.rootUser=dcache --set-string auth.rootPassword=let-me-in --set-string defaultBuckets="hsm" --wait tape bitnami/minio
+#Deploy MinIO as Tape:
+#  stage: test_infra
+#  extends: .helm_image
+#  script:
+#    - helm repo add bitnami https://charts.bitnami.com/bitnami
+#    - helm repo update
+#    - helm -n ${K8S_NAMESPACE} install ${HELM_OPTS} --set-string auth.rootUser=dcache --set-string auth.rootPassword=let-me-in --set-string defaultBuckets="hsm" --wait tape bitnami/minio
 
 
 #
 # OIDC provided for token-based testing
 #
-Deploy Keycloak:
-  stage: test_infra
-  extends: .kubernetes_image
-  script:
-    - kubectl -n $K8S_NAMESPACE apply -f .ci/keycloack-deployment.yaml
+#Deploy Keycloak:
+#  stage: test_infra
+#  extends: .kubernetes_image
+#  script:
+#    - kubectl -n $K8S_NAMESPACE apply -f .ci/keycloack-deployment.yaml
     # FIXME: add readiness check
     # - while ! kubectl -n $K8S_NAMESPACE wait --for=condition=Ready deployment.apps/keycloak; do sleep 1; done
 
