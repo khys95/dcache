@@ -1,5 +1,3 @@
-### These tests are to make sure the label functionality works as expected.
-
 ### upload readme file
 PUT {{webdav-door}}/data/pool-a/readme
 Authorization: Basic admin dickerelch
@@ -7,7 +5,8 @@ Content-Type: application/octet-stream
 
 < /README.md
 
-### upload readme1 file
+
+### upload readmeone file
 PUT {{webdav-door}}/data/pool-a/readmeone
 Authorization: Basic admin dickerelch
 Content-Type: application/octet-stream
@@ -15,11 +14,20 @@ Content-Type: application/octet-stream
 < /README.md
 
 
-### make sure readme file is there
-GET {{frontend-door}}{{endpoint}}{{namespace}}/readme
 
 ### make sure readme file is there
-GET {{frontend-door}}{{endpoint}}{{namespace}}/readmeone
+GET {{frontend-door}}{{endpoint}}{{namespace}}/readme
+#GET http://localhost:3880/api/v1/namespace/readme
+
+
+
+### add "firststep" label to readmeone file
+POST {{frontend-door}}{{endpoint}}{{namespace}}/readmeone
+Authorization: Basic admin dickerelch
+Accept: application/json
+Content-Type: application/json
+
+{"action" : "set-label", "label" : "firststep" }
 
 
 ### add "firststep" label to readme file
@@ -31,42 +39,124 @@ Content-Type: application/json
 {"action" : "set-label", "label" : "firststep" }
 
 
-### add "firststep" label to readme1 file
-POST {{frontend-door}}{{endpoint}}{{namespace}}/readmeone
-Authorization: Basic admin dickerelch
-Accept: application/json
-Content-Type: application/json
-
-{"action" : "set-label", "label" : "firststep" }
-
-
 ### get file(s) that has "firststep" label
 GET {{frontend-door}}{{endpoint}}{{labels}}/firststep
 
 
-### make sure readme file could be downloaded
-GET {{webdav-door}}/.(collection)(firststep)/readmedownloaded
+
+### get file(s) name that has "firststep" label
+#Traversing the response
+#GET {{frontend-door}}{{endpoint}}{{labels}}/firststep
+
+> {%
+client.test("Response file name  is", function() {
+
+        var fileName1 = response.body["children"][0]["fileName"];
+        var fileName2 = response.body["children"][1]["fileName"];
+
+
+        client.log("Response filename 1: " + fileName1);
+        client.log("Response filename 2: " + fileName2);
+
+
+        client.assert(fileName1 === "readme-0", "Expected 'fileName' to have value 'readme-0' but received '" + fileName2 + "'");
+        client.assert(fileName2 === "readmeone-0", "Expected 'fileName' to have value 'readmeone-0' but received '" + fileName1 + "'");
+
+    });
+
+    client.global.set("fileName1", response.body["children"][0]["fileName"]);
+    client.global.set("fileName2", response.body["children"][1]["fileName"]);
+
+
+%}
+
+### make sure readme file  could be downloaded
+GET {{webdav-door}}/.(collection)(firststep)/{{fileName1}}
 Content-Type: application/octet-stream
 
 > {%
-  client.test("Response status is 200 OK", function () {
-    client.assert(response.status === 200, "Response status is NOT 200 OK");
+    client.test("Response status is 200 OK", function () {
+        client.assert(response.status === 200, "Response status is NOT 200 OK");
 
-  });
+    });
 
 %}
 
 ### make sure readme file  could downloaded
-GET {{webdav-door}}/.(collection)(firststep)/readmeONEdownloaded
+GET {{webdav-door}}/.(collection)(firststep)/{{fileName2}}
 Content-Type: application/octet-stream
 
 
 > {%
-  client.test("Response status is 200 OK", function () {
-    client.assert(response.status === 200, "Response status is NOT 200 OK");
+    client.test("Response status is 200 OK", function () {
+        client.assert(response.status === 200, "Response status is NOT 200 OK");
 
-  });
+    });
 
 %}
 
 
+
+### make sure "blue" and "firststep" label is there
+GET {{frontend-door}}{{endpoint}}{{namespace}}/readme/?labels=true
+
+> {%
+    client.test("Response file name  is", function () {
+
+        var label1 = response.body["labels"]
+
+
+        client.log("Response filename 1: " + label1);
+
+        let globalValue = client.global.get("auth_token");
+
+
+        client.log("Response RealfileName1 1: " + globalValue );
+
+
+        client.assert(label1[0] === "firststep",
+            "Expected 'label' to have value 'firststep' but received '" + label1 + "'");
+
+    });
+
+%}
+
+
+
+### add "blue" label to readme file
+POST {{frontend-door}}{{endpoint}}{{namespace}}/readme
+#POST http://localhost:3880/api/v1/namespace/readme
+Authorization: Basic admin dickerelch
+Accept: application/json
+Content-Type: application/json
+
+{"action" : "set-label", "label" : "blue" }
+
+### remove "blue" label
+POST {{frontend-door}}{{endpoint}}{{namespace}}/readme
+#POST http://localhost:3880/api/v1/namespace/readme
+Authorization: Basic admin dickerelch
+Accept: application/json
+Content-Type: application/json
+
+{"action" : "rm-label", "label" : "blue" }
+
+### make sure "blue" label is NOT in readme file
+GET {{frontend-door}}{{endpoint}}{{namespace}}/readme/?labels=true
+#GET http://localhost:3880/api/v1/namespace/readme/?labels=true
+
+> {%
+    client.test("Response file name  is", function () {
+
+        var label1 = response.body["labels"]
+
+        client.log("Response filename 2: " + label1);
+        client.log("Response filename 3: " + label1[1]);
+
+
+        client.assert(label1[1] == undefined,
+            "Expected 'label blue' to have value != null, but received '" + label1 + "'");
+
+    });
+
+%}
