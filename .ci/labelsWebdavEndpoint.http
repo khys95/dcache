@@ -1,6 +1,6 @@
 ### upload readme file
 PUT {{webdav-door}}/data/pool-a/readme
-Authorization: Basic admin dickerelch
+Authorization: Basic {{user_name}} {{passwd}}
 Content-Type: application/octet-stream
 
 < /README.md
@@ -23,7 +23,7 @@ GET {{frontend-door}}{{endpoint}}{{namespace}}/readme
 
 ### add "firststep" label to readmeone file
 POST {{frontend-door}}{{endpoint}}{{namespace}}/readmeone
-Authorization: Basic admin dickerelch
+Authorization: Basic {{user_name}} {{passwd}}
 Accept: application/json
 Content-Type: application/json
 
@@ -32,7 +32,7 @@ Content-Type: application/json
 
 ### add "firststep" label to readme file
 POST {{frontend-door}}{{endpoint}}{{namespace}}/readme
-Authorization: Basic admin dickerelch
+Authorization: Basic {{user_name}} {{passwd}}
 Accept: application/json
 Content-Type: application/json
 
@@ -126,7 +126,7 @@ GET {{frontend-door}}{{endpoint}}{{namespace}}/readme/?labels=true
 ### add "blue" label to readme file
 POST {{frontend-door}}{{endpoint}}{{namespace}}/readme
 #POST http://localhost:3880/api/v1/namespace/readme
-Authorization: Basic admin dickerelch
+Authorization: Basic {{user_name}} {{passwd}}
 Accept: application/json
 Content-Type: application/json
 
@@ -135,7 +135,7 @@ Content-Type: application/json
 ### remove "blue" label
 POST {{frontend-door}}{{endpoint}}{{namespace}}/readme
 #POST http://localhost:3880/api/v1/namespace/readme
-Authorization: Basic admin dickerelch
+Authorization: Basic {{user_name}} {{passwd}}
 Accept: application/json
 Content-Type: application/json
 
