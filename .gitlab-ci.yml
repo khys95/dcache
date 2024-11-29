@@ -462,15 +462,15 @@ Deploy Zookeeper:
 #
 # infrastructure required to run dCache
 #
-#Deploy Kafka:
-#  stage: test_infra
-#  extends: .helm_image
-#  needs:
-#    - Deploy Zookeeper
-#  script:
-#    - helm repo add bitnami https://charts.bitnami.com/bitnami
-#    - helm repo update
-#    - helm -n ${K8S_NAMESPACE} install ${HELM_OPTS} --wait --set externalZookeeper.servers=cells-zookeeper --set kraft.enabled=false billing bitnami/kafka --version 23.0.7
+Deploy Kafka:
+  stage: test_infra
+  extends: .helm_image
+  needs:
+    - Deploy Zookeeper
+  script:
+    - helm repo add bitnami https://charts.bitnami.com/bitnami
+    - helm repo update
+    - helm -n ${K8S_NAMESPACE} install ${HELM_OPTS} --wait --set externalZookeeper.servers=cells-zookeeper --set kraft.enabled=false billing bitnami/kafka --version 23.0.7
 
 #
 # infrastructure required to run dCache
