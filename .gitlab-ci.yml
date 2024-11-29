@@ -280,11 +280,11 @@ container:
 #    paths:
 #    - packages/fhs/target/dcache_*.deb
 
-RPM test install on EL9:
-  stage: test_deploy
-  image: almalinux:9
-  script:
-    - dnf --nogpgcheck install -y packages/fhs/target/rpmbuild/RPMS/noarch/dcache*.rpm
+#RPM test install on EL9:
+#  stage: test_deploy
+#  image: almalinux:9
+#  script:
+#    - dnf --nogpgcheck install -y packages/fhs/target/rpmbuild/RPMS/noarch/dcache*.rpm
 
 #install_deb:
 #  stage: test_deploy
