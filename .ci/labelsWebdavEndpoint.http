@@ -1,3 +1,4 @@
+#pipeline: https://gitlab.desy.de/dcache/dcache/-/jobs/642225
 ### upload readme file
 PUT {{webdav-door}}/data/pool-a/readme
 Authorization: Basic {{user_name}} {{passwd}}
