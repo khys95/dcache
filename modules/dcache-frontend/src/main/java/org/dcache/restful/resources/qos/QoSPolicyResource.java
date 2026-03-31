@@ -106,10 +106,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * RestFul API to manage dCache QoS Policy descriptions.
+ * RESTful API to manage dCache QoS Policies.
+ * <p>
+ * QoS Policies define how files should be stored and maintained across different storage
+ * tiers (DISK, HSM). Each policy specifies a sequence of states that determine where files
+ * should reside and for how long.</p>
+ *
  */
-@Api(value = "qos-policy", authorizations = {@Authorization("basicAuth")})
+
 @Component
+@Api(value = "qos-policy", authorizations = {@Authorization("basicAuth")})
 @Path("/qos-policy")
 public class QoSPolicyResource {
 
@@ -122,8 +128,13 @@ public class QoSPolicyResource {
     @Named("qos-engine")
     private CellStub qosEngine;
 
+    /**
+     * Get a list of all registered QoS policy names.
+     *
+     * @return List of policy names
+     */
     @GET
-    @ApiOperation(value = "List all the registered QoSPolicy names.")
+    @ApiOperation(value = "List all the registered QoS policy names.")
     @ApiResponses({
           @ApiResponse(code = 400, message = "Bad Request"),
           @ApiResponse(code = 401, message = "Unauthorized"),
@@ -151,16 +162,22 @@ public class QoSPolicyResource {
         }
     }
 
+    /**
+     * Get detailed information about a specific QoS policy.
+     *
+     * @param name Policy name
+     * @return Full QoS policy description
+     */
     @GET
-    @ApiOperation(value = "Retrieve the QoSPolicy by this name.")
+    @Path("{name}")
+    @ApiOperation(value = "Retrieve a specific QoS policy by name.")
     @ApiResponses({
           @ApiResponse(code = 400, message = "Bad Request"),
           @ApiResponse(code = 401, message = "Unauthorized"),
           @ApiResponse(code = 403, message = "Forbidden"),
-          @ApiResponse(code = 404, message = "Not Found"),
+          @ApiResponse(code = 404, message = "Policy Not Found"),
           @ApiResponse(code = 500, message = "Internal Server Error"),
     })
-    @Path("{name}")
     @Produces(MediaType.APPLICATION_JSON)
     public QoSPolicy getPolicy(
           @ApiParam("The name of the policy (unique to this dCache instance).")
@@ -190,16 +207,25 @@ public class QoSPolicyResource {
         }
     }
 
+    /**
+     * Delete a QoS policy.
+     *
+     * <p><strong>Warning:</strong> This action is irreversible. The policy will be
+     * completely removed from the system.</p>
+     *
+     * @param name Policy name to delete
+     * @return HTTP 200 OK
+     */
     @DELETE
-    @ApiOperation(value = "Delete the QoSPolicy by this name.")
+    @Path("{name}")
+    @ApiOperation(value = "Permanently delete a QoS policy by name.")
     @ApiResponses({
           @ApiResponse(code = 400, message = "Bad Request"),
           @ApiResponse(code = 401, message = "Unauthorized"),
           @ApiResponse(code = 403, message = "Forbidden"),
-          @ApiResponse(code = 404, message = "Not Found"),
+          @ApiResponse(code = 404, message = "Policy Not Found"),
           @ApiResponse(code = 500, message = "Internal Server Error"),
     })
-    @Path("{name}")
     public Response deletePolicy(
           @ApiParam("The name of the policy (unique to this dCache instance).")
           @PathParam("name")String name) {
@@ -228,6 +254,12 @@ public class QoSPolicyResource {
         return successfulResponse(Response.Status.OK);
     }
 
+    /**
+     * Create a new QoS policy.
+     *
+     * @param requestPayload JSON policy definition
+     * @return HTTP 200 OK
+     */
     @POST
     @ApiOperation(value = "Add a QoSPolicy by this name; if a policy is currently "
           + "mapped to that name, an error is returned.")
