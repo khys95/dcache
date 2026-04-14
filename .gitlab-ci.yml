@@ -488,7 +488,7 @@ Deploy Keycloak:
   stage: test_infra
   extends: .kubernetes_image
   script:
-    - kubectl -n $K8S_NAMESPACE apply -f .ci/keycloack-deployment.yaml
+    - kubectl -n $K8S_NAMESPACE apply -f .ci/k8s/keycloack-deployment.yaml
     # FIXME: add readiness check
     # - while ! kubectl -n $K8S_NAMESPACE wait --for=condition=Ready deployment.apps/keycloak; do sleep 1; done
 
