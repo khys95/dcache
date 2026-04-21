@@ -322,6 +322,18 @@
         <artifactId>jimfs</artifactId>
         <scope>test</scope>
     </dependency>
+    <dependency>
+        <groupId>org.apache.curator</groupId>
+        <artifactId>curator-test</artifactId>
+        <version>5.9.0</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.junit.vintage</groupId>
+        <artifactId>junit-vintage-engine</artifactId>
+        <version>5.10.2</version>
+        <scope>test</scope>
+    </dependency>
 
     <!-- used by alarms, needs to be deployed -->
     <dependency>
